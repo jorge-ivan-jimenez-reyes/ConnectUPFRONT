@@ -37,7 +37,7 @@ export const LoginUser: React.FC = () => {
 
     try {
       await login(formData);
-      navigate(ROUTES.USER.DASHBOARD);
+      navigate(ROUTES.USER.MI_ESPACIO);
     } catch (err) {
       setError('Credenciales inválidas. Por favor, inténtalo de nuevo.');
     } finally {
