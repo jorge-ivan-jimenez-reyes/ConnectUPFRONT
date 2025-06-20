@@ -37,9 +37,12 @@ export const LoginAdmin: React.FC = () => {
     setError(null);
 
     try {
+      console.log('Intentando login admin...', { email: formData.email });
       await login(formData);
-      navigate(ROUTES.ADMIN.DASHBOARD);
+      console.log('Login exitoso, navegando a:', ROUTES.ADMIN.MI_ESPACIO);
+      navigate(ROUTES.ADMIN.MI_ESPACIO);
     } catch (err) {
+      console.error('Error en login:', err);
       setError('Credenciales inválidas. Por favor, inténtalo de nuevo.');
     } finally {
       setIsLoading(false);

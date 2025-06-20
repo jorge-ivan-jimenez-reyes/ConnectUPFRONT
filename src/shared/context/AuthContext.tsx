@@ -124,9 +124,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       // Por ahora, simular usuario válido
       const mockUser = UserModel.createEmpty();
       mockUser.id = '1';
-      mockUser.email = 'test@example.com';
-      mockUser.firstName = 'Test';
-      mockUser.lastName = 'User';
+      mockUser.email = 'admin@sistema.com';
+      mockUser.firstName = 'Admin';
+      mockUser.lastName = 'Sistema';
+      mockUser.role = 'admin';
       
       dispatch({
         type: 'AUTH_SUCCESS',
@@ -147,12 +148,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       // Simular llamada al backend
       // const response = await authService.login(credentials);
       
+      // Detectar si es login de admin basado en la URL actual
+      const isAdminLogin = window.location.pathname.includes('/login/admin');
+      
       // Simular respuesta exitosa
       const mockUser = UserModel.createEmpty();
       mockUser.id = '1';
       mockUser.email = credentials.email;
-      mockUser.firstName = 'Test';
-      mockUser.lastName = 'User';
+      mockUser.firstName = isAdminLogin ? 'Admin' : 'Usuario';
+      mockUser.lastName = isAdminLogin ? 'Sistema' : 'Docente';
+      mockUser.role = isAdminLogin ? 'admin' : 'user';
       
       const token = 'mock-jwt-token';
       

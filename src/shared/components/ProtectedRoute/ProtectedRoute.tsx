@@ -44,8 +44,8 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     !allowedRoles.includes(user.role)
   ) {
     const defaultRedirect = user.role === 'admin' 
-      ? ROUTES.ADMIN.DASHBOARD 
-      : ROUTES.USER.DASHBOARD;
+      ? ROUTES.ADMIN.MI_ESPACIO 
+      : ROUTES.USER.MI_ESPACIO;
     
     return <Navigate to={defaultRedirect} replace />;
   }

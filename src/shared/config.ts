@@ -25,20 +25,21 @@ export const ROUTES = {
   
   // Rutas de administrador
   ADMIN: {
-    DASHBOARD: '/admin/dashboard',
+    MI_ESPACIO: '/admin/mi-espacio',
     INSTITUCIONES: '/admin/instituciones',
-    USUARIOS: '/admin/usuarios',
+    FACULTADES: '/admin/facultades',
     REPORTES: '/admin/reportes',
-    CONFIGURACION: '/admin/configuracion',
+    USUARIOS: '/admin/usuarios',
   },
   
   // Rutas de usuario/docente
   USER: {
-    DASHBOARD: '/user/dashboard',
-    MI_CV: '/user/mi-cv',
-    MIS_CLASES: '/user/mis-clases',
     MI_ESPACIO: '/user/mi-espacio',
-    PERFIL: '/user/perfil',
+    MIS_CLASES: '/user/mis-clases',
+    TEMARIOS: '/user/temarios',
+    MIS_HORARIOS: '/user/mis-horarios',
+    MI_CV: '/user/mi-cv',
+    MI_PERFIL: '/user/mi-perfil',
   },
 } as const;
 
