@@ -31,4 +31,22 @@ export { ListaClases } from './Horarios/ListaClases';
 
 // Disponibilidad Components
 export { CalendarioDisponibilidad } from './Disponibilidad/CalendarioDisponibilidad';
-export { CeldaDisponibilidad } from './Disponibilidad/CeldaDisponibilidad'; 
+export { CeldaDisponibilidad } from './Disponibilidad/CeldaDisponibilidad';
+
+// Mi CV Components
+export { NavegacionCV } from './MiCV/NavegacionCV';
+export { FormularioDatosBasicos } from './MiCV/FormularioDatosBasicos';
+export { GestorCV } from './MiCV/GestorCV';
+
+// User components exports
+export * from './Layout';
+export * from './Sidebar';
+export * from './StatsCards';
+export * from './HorarioClases';
+export * from './BannerPromocional';
+export * from './AccionesRapidas';
+export * from './MisClases';
+export * from './Temarios';
+export * from './Horarios';
+export * from './Disponibilidad';
+export * from './MiCV'; 
