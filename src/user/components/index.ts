@@ -21,4 +21,14 @@ export { TarjetaClase } from './MisClases/TarjetaClase';
 export { PreferenciaClases } from './Temarios/PreferenciaClases';
 export { HeaderPreferencias } from './Temarios/HeaderPreferencias';
 export { TarjetaMateria } from './Temarios/TarjetaMateria';
-export { DetalleTemario } from './Temarios/DetalleTemario'; 
+export { DetalleTemario } from './Temarios/DetalleTemario';
+
+// Horarios Components
+export { CalendarioHorarios } from './Horarios/CalendarioHorarios';
+export { CalendarioGrid } from './Horarios/CalendarioGrid';
+export { ClaseCard } from './Horarios/ClaseCard';
+export { ListaClases } from './Horarios/ListaClases';
+
+// Disponibilidad Components
+export { CalendarioDisponibilidad } from './Disponibilidad/CalendarioDisponibilidad';
+export { CeldaDisponibilidad } from './Disponibilidad/CeldaDisponibilidad'; 

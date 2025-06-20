@@ -1,3 +1,5 @@
 // User interfaces exports
 export * from './clase.interfaces';
-export * from './temario.interfaces'; 
+export * from './temario.interfaces';
+export * from './horario.interfaces';
+export * from './disponibilidad.interfaces'; 
