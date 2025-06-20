@@ -1,213 +1,314 @@
 // Vista Mi Perfil - Configuración del perfil del usuario
 
-import React, { useState } from 'react';
+import React, { useRef } from 'react';
+import { usePerfil } from '../hooks/usePerfil';
+import { FaCamera, FaEdit, FaSave, FaTimes } from 'react-icons/fa';
 
 export const MiPerfil: React.FC = () => {
-  const [tabActiva, setTabActiva] = useState<'personal' | 'seguridad' | 'notificaciones'>('personal');
-  const [modoEdicion, setModoEdicion] = useState<boolean>(false);
+  const {
+    perfil,
+    configuracion,
+    toggleModoEdicion,
+    actualizarCampo,
+    actualizarGestionAcademica,
+    guardarCambios,
+    cancelarEdicion,
+    actualizarAvatar
+  } = usePerfil();
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleAvatarClick = () => {
+    if (configuracion.modoEdicion) {
+      fileInputRef.current?.click();
+    }
+  };
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      actualizarAvatar(file);
+    }
+  };
+
+  const handleGuardar = async () => {
+    const success = await guardarCambios();
+    if (success) {
+      // Mostrar notificación de éxito si es necesario
+    }
+  };
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Mi Perfil</h1>
-          <p className="text-gray-600 mt-2">Gestiona tu información personal y configuración</p>
-        </div>
-        <button 
-          onClick={() => setModoEdicion(!modoEdicion)}
-          className="bg-brand-primary text-white px-6 py-3 rounded-lg hover:bg-brand-primary/90 transition-colors"
-        >
-          {modoEdicion ? 'Guardar Cambios' : 'Editar Perfil'}
-        </button>
-      </div>
-
-      {/* Header del perfil */}
-      <div className="bg-gradient-to-r from-brand-primary to-brand-secondary p-6 rounded-lg text-white">
-        <div className="flex items-center space-x-6">
-          <div className="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center">
-            <span className="text-3xl font-bold text-white">JD</span>
-          </div>
-          <div>
-            <h2 className="text-2xl font-bold">Juan Docente</h2>
-            <p className="text-white/90">Profesor de Desarrollo Web</p>
-            <p className="text-white/80 text-sm">Miembro desde Enero 2024</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Navegación de tabs */}
-      <div className="bg-white rounded-lg shadow-sm border">
-        <div className="border-b border-gray-200">
-          <nav className="flex space-x-8 px-6">
-            {[
-              { id: 'personal', nombre: 'Información Personal', icon: '👤' },
-              { id: 'seguridad', nombre: 'Seguridad', icon: '🔒' },
-              { id: 'notificaciones', nombre: 'Notificaciones', icon: '🔔' }
-            ].map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setTabActiva(tab.id as any)}
-                className={`py-4 px-2 border-b-2 font-medium text-sm transition-colors ${
-                  tabActiva === tab.id
-                    ? 'border-brand-primary text-brand-primary'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
-              >
-                <span className="mr-2">{tab.icon}</span>
-                {tab.nombre}
-              </button>
-            ))}
-          </nav>
+    <div className="min-h-screen bg-gray-50 p-6">
+      <div className="max-w-4xl mx-auto">
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Mi Perfil</h1>
+          <p className="text-gray-600">Gestiona tu información personal y configuración académica</p>
         </div>
 
-        {/* Contenido de las tabs */}
-        <div className="p-6">
-          {tabActiva === 'personal' && (
-            <div className="space-y-6">
-              <h3 className="text-lg font-semibold text-gray-900">Información Personal</h3>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Nombre</label>
-                  <input
-                    type="text"
-                    defaultValue="Juan"
-                    disabled={!modoEdicion}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-primary focus:border-brand-primary disabled:bg-gray-50"
-                  />
+        {/* Contenido principal */}
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+          {/* Sección del avatar y información básica */}
+          <div className="p-8">
+            <div className="flex items-start gap-8">
+              {/* Avatar */}
+              <div className="relative">
+                <div 
+                  className={`w-32 h-32 rounded-full overflow-hidden bg-gray-200 border-4 border-white shadow-lg ${
+                    configuracion.modoEdicion ? 'cursor-pointer hover:opacity-80' : ''
+                  }`}
+                  onClick={handleAvatarClick}
+                >
+                  {perfil.avatar ? (
+                    <img 
+                      src={perfil.avatar} 
+                      alt="Avatar" 
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-gray-300 flex items-center justify-center text-gray-500 text-3xl font-bold">
+                      {perfil.nombreUsuario.charAt(0).toUpperCase()}
+                    </div>
+                  )}
+                  
+                  {configuracion.modoEdicion && (
+                    <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center rounded-full opacity-0 hover:opacity-100 transition-opacity">
+                      <FaCamera className="text-white text-xl" />
+                    </div>
+                  )}
                 </div>
                 
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileChange}
+                  className="hidden"
+                />
+              </div>
+
+              {/* Información básica */}
+              <div className="flex-1 space-y-6">
+                {/* Nombre de Usuario */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Apellido</label>
-                  <input
-                    type="text"
-                    defaultValue="Docente"
-                    disabled={!modoEdicion}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-primary focus:border-brand-primary disabled:bg-gray-50"
-                  />
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Nombre de Usuario
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={perfil.nombreUsuario}
+                      onChange={(e) => actualizarCampo('nombreUsuario', e.target.value)}
+                      disabled={!configuracion.modoEdicion}
+                      className={`w-full px-4 py-3 border rounded-xl text-lg font-medium transition-colors ${
+                        configuracion.modoEdicion 
+                          ? 'border-gray-300 bg-white focus:ring-2 focus:ring-brand-primary focus:border-brand-primary' 
+                          : 'border-gray-200 bg-gray-50 text-gray-900'
+                      } ${configuracion.errores.nombreUsuario ? 'border-red-300' : ''}`}
+                      placeholder="Ingresa tu nombre completo"
+                    />
+                    {configuracion.errores.nombreUsuario && (
+                      <p className="text-red-500 text-sm mt-1">{configuracion.errores.nombreUsuario}</p>
+                    )}
+                  </div>
                 </div>
-                
+
+                {/* Fecha de Nacimiento */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Fecha de Nacimiento
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="date"
+                      value={perfil.fechaNacimiento}
+                      onChange={(e) => actualizarCampo('fechaNacimiento', e.target.value)}
+                      disabled={!configuracion.modoEdicion}
+                      className={`w-full px-4 py-3 border rounded-xl transition-colors ${
+                        configuracion.modoEdicion 
+                          ? 'border-gray-300 bg-white focus:ring-2 focus:ring-brand-primary focus:border-brand-primary' 
+                          : 'border-gray-200 bg-gray-50 text-gray-600'
+                      } ${configuracion.errores.fechaNacimiento ? 'border-red-300' : ''}`}
+                    />
+                    {configuracion.errores.fechaNacimiento && (
+                      <p className="text-red-500 text-sm mt-1">{configuracion.errores.fechaNacimiento}</p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Descripción */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Descripción
+                  </label>
+                  <div className="relative">
+                    <textarea
+                      value={perfil.descripcion}
+                      onChange={(e) => actualizarCampo('descripcion', e.target.value)}
+                      disabled={!configuracion.modoEdicion}
+                      rows={4}
+                      className={`w-full px-4 py-3 border rounded-xl transition-colors resize-none ${
+                        configuracion.modoEdicion 
+                          ? 'border-gray-300 bg-white focus:ring-2 focus:ring-brand-primary focus:border-brand-primary' 
+                          : 'border-gray-200 bg-gray-50 text-gray-600'
+                      }`}
+                      placeholder="Describe tu experiencia y especialidades..."
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Separador */}
+          <div className="border-t border-gray-200"></div>
+
+          {/* Sección de Tu Información - Gestión Académica */}
+          <div className="p-8">
+            <div className="mb-6">
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">Tu Información</h2>
+              <div className="inline-block px-4 py-2 bg-gray-100 rounded-lg">
+                <span className="text-sm font-medium text-gray-600">Gestión Académica</span>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Correo Institucional */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Correo Institucional
+                </label>
+                <div className="relative">
                   <input
                     type="email"
-                    defaultValue="juan.docente@universidad.edu"
-                    disabled={!modoEdicion}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-primary focus:border-brand-primary disabled:bg-gray-50"
+                    value={perfil.informacionGestionAcademica.correoInstitucional}
+                    onChange={(e) => actualizarGestionAcademica('correoInstitucional', e.target.value)}
+                    disabled={!configuracion.modoEdicion}
+                    className={`w-full px-4 py-3 border rounded-xl transition-colors ${
+                      configuracion.modoEdicion 
+                        ? 'border-gray-300 bg-white focus:ring-2 focus:ring-brand-primary focus:border-brand-primary' 
+                        : 'border-gray-200 bg-gray-50 text-gray-600'
+                    } ${configuracion.errores.correoInstitucional ? 'border-red-300' : ''}`}
+                    placeholder="ejemplo@up.edu.mx"
                   />
+                  {configuracion.errores.correoInstitucional && (
+                    <p className="text-red-500 text-sm mt-1">{configuracion.errores.correoInstitucional}</p>
+                  )}
                 </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Teléfono</label>
+              </div>
+
+              {/* Correo Personal */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Correo Personal
+                </label>
+                <div className="relative">
+                  <input
+                    type="email"
+                    value={perfil.informacionGestionAcademica.correoPersonal}
+                    onChange={(e) => actualizarGestionAcademica('correoPersonal', e.target.value)}
+                    disabled={!configuracion.modoEdicion}
+                    className={`w-full px-4 py-3 border rounded-xl transition-colors ${
+                      configuracion.modoEdicion 
+                        ? 'border-gray-300 bg-white focus:ring-2 focus:ring-brand-primary focus:border-brand-primary' 
+                        : 'border-gray-200 bg-gray-50 text-gray-600'
+                    } ${configuracion.errores.correoPersonal ? 'border-red-300' : ''}`}
+                    placeholder="ejemplo@gmail.com"
+                  />
+                  {configuracion.errores.correoPersonal && (
+                    <p className="text-red-500 text-sm mt-1">{configuracion.errores.correoPersonal}</p>
+                  )}
+                </div>
+              </div>
+
+              {/* Celular */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Celular
+                </label>
+                <div className="relative">
                   <input
                     type="tel"
-                    defaultValue="+1 (555) 123-4567"
-                    disabled={!modoEdicion}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-primary focus:border-brand-primary disabled:bg-gray-50"
+                    value={perfil.informacionGestionAcademica.celular}
+                    onChange={(e) => actualizarGestionAcademica('celular', e.target.value)}
+                    disabled={!configuracion.modoEdicion}
+                    className={`w-full px-4 py-3 border rounded-xl transition-colors ${
+                      configuracion.modoEdicion 
+                        ? 'border-gray-300 bg-white focus:ring-2 focus:ring-brand-primary focus:border-brand-primary' 
+                        : 'border-gray-200 bg-gray-50 text-gray-600'
+                    } ${configuracion.errores.celular ? 'border-red-300' : ''}`}
+                    placeholder="(+210) 55 1234 5678"
+                  />
+                  {configuracion.errores.celular && (
+                    <p className="text-red-500 text-sm mt-1">{configuracion.errores.celular}</p>
+                  )}
+                </div>
+              </div>
+
+              {/* Teléfono */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Teléfono
+                </label>
+                <div className="relative">
+                  <input
+                    type="tel"
+                    value={perfil.informacionGestionAcademica.telefono || ''}
+                    onChange={(e) => actualizarGestionAcademica('telefono', e.target.value)}
+                    disabled={!configuracion.modoEdicion}
+                    className={`w-full px-4 py-3 border rounded-xl transition-colors ${
+                      configuracion.modoEdicion 
+                        ? 'border-gray-300 bg-white focus:ring-2 focus:ring-brand-primary focus:border-brand-primary' 
+                        : 'border-gray-200 bg-gray-50 text-gray-600'
+                    }`}
+                    placeholder="Región"
                   />
                 </div>
               </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Especialidad</label>
-                <input
-                  type="text"
-                  defaultValue="Desarrollo Web Full Stack"
-                  disabled={!modoEdicion}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-primary focus:border-brand-primary disabled:bg-gray-50"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Biografía</label>
-                <textarea
-                  rows={4}
-                  defaultValue="Profesor con más de 5 años de experiencia en desarrollo web. Especializado en tecnologías modernas como React, Node.js y bases de datos."
-                  disabled={!modoEdicion}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-primary focus:border-brand-primary disabled:bg-gray-50"
-                />
-              </div>
             </div>
-          )}
+          </div>
 
-          {tabActiva === 'seguridad' && (
-            <div className="space-y-6">
-              <h3 className="text-lg font-semibold text-gray-900">Configuración de Seguridad</h3>
-              
-              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                <div className="flex">
-                  <svg className="w-5 h-5 text-yellow-400 mr-3 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                  </svg>
-                  <div>
-                    <h4 className="text-sm font-medium text-yellow-800">Última sesión</h4>
-                    <p className="text-sm text-yellow-700 mt-1">Accediste por última vez el 20 de Enero, 2024 a las 14:30</p>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="space-y-4">
-                <div>
-                  <h4 className="text-sm font-medium text-gray-900 mb-3">Cambiar Contraseña</h4>
-                  <div className="space-y-3">
-                    <input
-                      type="password"
-                      placeholder="Contraseña actual"
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-primary focus:border-brand-primary"
-                    />
-                    <input
-                      type="password"
-                      placeholder="Nueva contraseña"
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-primary focus:border-brand-primary"
-                    />
-                    <input
-                      type="password"
-                      placeholder="Confirmar nueva contraseña"
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-primary focus:border-brand-primary"
-                    />
-                  </div>
-                  <button className="mt-3 bg-brand-primary text-white px-4 py-2 rounded-lg hover:bg-brand-primary/90 transition-colors">
-                    Actualizar Contraseña
+          {/* Botón de acción */}
+          <div className="px-8 pb-8">
+            <div className="flex justify-end">
+              {!configuracion.modoEdicion ? (
+                <button
+                  onClick={toggleModoEdicion}
+                  className="bg-gray-100 text-gray-700 px-8 py-3 rounded-xl hover:bg-gray-200 transition-colors flex items-center gap-2 font-medium"
+                >
+                  <FaEdit size={16} />
+                  Editar Perfil
+                </button>
+              ) : (
+                <div className="flex gap-3">
+                  <button
+                    onClick={cancelarEdicion}
+                    disabled={configuracion.guardandoCambios}
+                    className="bg-gray-100 text-gray-700 px-6 py-3 rounded-xl hover:bg-gray-200 transition-colors flex items-center gap-2 font-medium disabled:opacity-50"
+                  >
+                    <FaTimes size={16} />
+                    Cancelar
+                  </button>
+                  <button
+                    onClick={handleGuardar}
+                    disabled={configuracion.guardandoCambios}
+                    className="bg-red-700 text-white px-8 py-3 rounded-xl hover:bg-red-800 transition-colors flex items-center gap-2 font-medium disabled:opacity-50"
+                  >
+                    <FaSave size={16} />
+                    {configuracion.guardandoCambios ? 'Actualizando...' : 'Actualizar Datos'}
                   </button>
                 </div>
-                
-                <div className="border-t border-gray-200 pt-4">
-                  <h4 className="text-sm font-medium text-gray-900 mb-3">Autenticación de Dos Factores</h4>
-                  <p className="text-sm text-gray-600 mb-3">Añade una capa extra de seguridad a tu cuenta.</p>
-                  <button className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors">
-                    Activar 2FA
-                  </button>
-                </div>
-              </div>
+              )}
             </div>
-          )}
 
-          {tabActiva === 'notificaciones' && (
-            <div className="space-y-6">
-              <h3 className="text-lg font-semibold text-gray-900">Preferencias de Notificaciones</h3>
-              
-              <div className="space-y-4">
-                {[
-                  { id: 'email', titulo: 'Notificaciones por Email', descripcion: 'Recibe notificaciones importantes por correo electrónico' },
-                  { id: 'nuevos-estudiantes', titulo: 'Nuevos Estudiantes', descripcion: 'Notificar cuando un estudiante se inscribe en tus clases' },
-                  { id: 'entregas', titulo: 'Entregas de Tareas', descripcion: 'Notificar cuando los estudiantes entregan tareas' },
-                  { id: 'recordatorios', titulo: 'Recordatorios de Clases', descripcion: 'Recordatorios 30 minutos antes de cada clase' }
-                ].map((notif) => (
-                  <div key={notif.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                    <div>
-                      <h4 className="text-sm font-medium text-gray-900">{notif.titulo}</h4>
-                      <p className="text-sm text-gray-600">{notif.descripcion}</p>
-                    </div>
-                    <label className="relative inline-flex items-center cursor-pointer">
-                      <input type="checkbox" className="sr-only peer" defaultChecked />
-                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-brand-primary/25 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand-primary"></div>
-                    </label>
-                  </div>
-                ))}
+            {/* Error general */}
+            {configuracion.errores.general && (
+              <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                <p className="text-red-700 text-sm">{configuracion.errores.general}</p>
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </div>
     </div>
