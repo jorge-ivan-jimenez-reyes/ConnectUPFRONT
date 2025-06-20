@@ -5,4 +5,5 @@ export { MisClases } from './MisClases';
 export { Temarios } from './Temarios';
 export { MisHorarios } from './MisHorarios';
 export { MiCV } from './MiCV';
-export { MiPerfil } from './MiPerfil'; 
+export { MiPerfil } from './MiPerfil';
+export { Mensajes } from './Mensajes'; 

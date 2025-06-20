@@ -40,6 +40,7 @@ export const ROUTES = {
     MIS_HORARIOS: '/user/mis-horarios',
     MI_CV: '/user/mi-cv',
     MI_PERFIL: '/user/mi-perfil',
+    MENSAJES: '/user/mensajes',
   },
 } as const;
 

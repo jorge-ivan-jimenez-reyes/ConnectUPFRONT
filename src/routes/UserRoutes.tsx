@@ -9,7 +9,8 @@ import {
   Temarios, 
   MisHorarios, 
   MiCV,
-  MiPerfil 
+  MiPerfil,
+  Mensajes
 } from '../user/views';
 
 export const UserRoutes: React.FC = () => {
@@ -21,6 +22,7 @@ export const UserRoutes: React.FC = () => {
         <Route path="mis-clases" element={<MisClases />} />
         <Route path="temarios" element={<Temarios />} />
         <Route path="mis-horarios" element={<MisHorarios />} />
+        <Route path="mensajes" element={<Mensajes />} />
         <Route path="mi-cv" element={<MiCV />} />
         <Route path="mi-perfil" element={<MiPerfil />} />
       </Route>
