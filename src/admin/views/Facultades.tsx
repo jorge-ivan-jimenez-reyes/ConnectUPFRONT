@@ -1,6 +1,15 @@
 // Vista Facultades/Escuelas para administradores
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
+import { StatsCard, DataTable, FilterBar, CreateFacultyModal } from '../components';
+import type { TableColumn } from '../components/DataTable/DataTable';
+import type { 
+  FacultyStats, 
+  FacultyTableRow, 
+  FacultyFilters, 
+  TableAction,
+  CreateFacultyFormDTO 
+} from '../interfaces';
 
 interface Faculty {
   id: string;
@@ -15,246 +24,242 @@ interface Faculty {
 }
 
 export const Facultades: React.FC = () => {
-  const [searchTerm, setSearchTerm] = useState<string>('');
-  const [typeFilter, setTypeFilter] = useState<string>('all');
-  const [institutionFilter, setInstitutionFilter] = useState<string>('all');
+  // Estado para filtros
+  const [filters, setFilters] = useState<FacultyFilters>({
+    searchTerm: '',
+    institucionFilter: 'all',
+    sortBy: 'nombre',
+    sortOrder: 'asc'
+  });
 
-  const faculties: Faculty[] = [
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('list');
+  
+  // Estado para el modal
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isCreatingFaculty, setIsCreatingFaculty] = useState(false);
+
+  // Estadísticas de facultades
+  const stats: FacultyStats = {
+    total: 4,
+    totalCarreras: 20
+  };
+
+  // Datos de ejemplo para facultades
+  const facultiesData: FacultyTableRow[] = [
     {
       id: '1',
-      name: 'Facultad de Ingeniería',
-      institution: 'Universidad de Lima',
-      type: 'faculty',
-      dean: 'Dr. Carlos Mendoza',
-      students: 1250,
-      programs: 8,
-      status: 'active',
-      createdAt: '2024-01-15'
+      nombre: 'Fac. Ingeniería',
+      institucion: 'UP MX',
+      carreras: 8,
+      fechaCreacion: '24.Ene.2021'
     },
     {
       id: '2',
-      name: 'Escuela de Negocios',
-      institution: 'Universidad Católica del Perú',
-      type: 'school',
-      dean: 'Dra. Ana Torres',
-      students: 890,
-      programs: 5,
-      status: 'active',
-      createdAt: '2024-02-10'
+      nombre: 'Fac. Pedagogía',
+      institucion: 'UP MX',
+      carreras: 5,
+      fechaCreacion: '12.Ene.2021'
     },
     {
       id: '3',
-      name: 'Facultad de Medicina',
-      institution: 'Universidad San Martín de Porres',
-      type: 'faculty',
-      dean: 'Dr. Roberto Silva',
-      students: 650,
-      programs: 3,
-      status: 'active',
-      createdAt: '2024-03-05'
+      nombre: 'Esc. ESDAI',
+      institucion: 'UP MX',
+      carreras: 4,
+      fechaCreacion: '5.Ene.2021'
     },
     {
       id: '4',
-      name: 'Escuela de Diseño',
-      institution: 'Instituto Tecnológico de Monterrey',
-      type: 'school',
-      dean: 'Mg. Patricia López',
-      students: 320,
-      programs: 4,
-      status: 'active',
-      createdAt: '2024-04-12'
+      nombre: 'Esc. Comunicación',
+      institucion: 'UP MX',
+      carreras: 3,
+      fechaCreacion: '7.Ene.2021'
     }
   ];
 
-  const getTypeText = (type: string) => {
-    return type === 'faculty' ? 'Facultad' : 'Escuela';
-  };
+  // Configuración de columnas
+  const columns: TableColumn[] = [
+    { key: 'nombre', title: 'Nombre', width: 'w-1/3' },
+    { key: 'institucion', title: 'Institución', width: 'w-1/4' },
+    { key: 'carreras', title: 'Carreras', width: 'w-1/6', align: 'center' },
+    { key: 'fechaCreacion', title: 'Fecha de creación', width: 'w-1/4', align: 'center' }
+  ];
 
-  const getTypeColor = (type: string) => {
-    return type === 'faculty' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800';
-  };
+  // Acciones de tabla
+  const tableActions: TableAction[] = [
+    {
+      type: 'edit',
+      label: 'Editar',
+      icon: (
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" className="w-full h-full">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+        </svg>
+      ),
+      onClick: handleEditFaculty,
+      variant: 'secondary'
+    },
+    {
+      type: 'delete',
+      label: 'Eliminar',
+      icon: (
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" className="w-full h-full">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+        </svg>
+      ),
+      onClick: handleDeleteFaculty,
+      variant: 'danger'
+    }
+  ];
 
-  const institutions = Array.from(new Set(faculties.map(f => f.institution)));
+  // Filtrar y ordenar datos
+  const filteredData = useMemo(() => {
+    let filtered = facultiesData.filter((faculty) => {
+      const matchesSearch = faculty.nombre.toLowerCase().includes(filters.searchTerm.toLowerCase()) ||
+                           faculty.institucion.toLowerCase().includes(filters.searchTerm.toLowerCase());
+      const matchesInstitution = filters.institucionFilter === 'all' || faculty.institucion === filters.institucionFilter;
+      
+      return matchesSearch && matchesInstitution;
+    });
+
+    // Ordenar
+    filtered.sort((a, b) => {
+      const aValue = a[filters.sortBy as keyof FacultyTableRow];
+      const bValue = b[filters.sortBy as keyof FacultyTableRow];
+      
+      if (typeof aValue === 'string' && typeof bValue === 'string') {
+        return filters.sortOrder === 'asc' 
+          ? aValue.localeCompare(bValue)
+          : bValue.localeCompare(aValue);
+      }
+      
+      if (typeof aValue === 'number' && typeof bValue === 'number') {
+        return filters.sortOrder === 'asc' ? aValue - bValue : bValue - aValue;
+      }
+      
+      return 0;
+    });
+
+    return filtered;
+  }, [facultiesData, filters]);
+
+  // Handlers
+  function handleCreateFaculty() {
+    setIsCreateModalOpen(true);
+  }
+
+  function handleCreateFacultySubmit(data: CreateFacultyFormDTO) {
+    setIsCreatingFaculty(true);
+    
+    // Simular API call
+    setTimeout(() => {
+      console.log('Nueva facultad creada:', data);
+      
+      setIsCreatingFaculty(false);
+      setIsCreateModalOpen(false);
+      
+      // Opcional: Mostrar notificación de éxito
+      alert(`Facultad "${data.nombre}" creada exitosamente`);
+    }, 2000);
+  }
+
+  function handleEditFaculty(id: string) {
+    console.log('Editar facultad:', id);
+  }
+
+  function handleDeleteFaculty(id: string) {
+    console.log('Eliminar facultad:', id);
+  }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">Facultades y Escuelas</h1>
-          <p className="text-slate-600 mt-1">Gestiona las facultades y escuelas de las instituciones</p>
-        </div>
-        <button className="mt-4 sm:mt-0 bg-[#202C59] text-white px-4 py-2 rounded-lg hover:bg-[#2A3B6B] transition-colors">
-          <span className="flex items-center">
-            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <div className="min-h-screen bg-white p-6">
+      <div className="max-w-7xl mx-auto space-y-6">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-slate-800">Facultades | Escuelas creadas</h1>
+            <p className="text-slate-600 mt-2">Administra las facultades y escuelas del sistema</p>
+          </div>
+          <button 
+            onClick={handleCreateFaculty}
+            className="mt-4 sm:mt-0 flex items-center gap-2 bg-[#202C59] text-white px-4 py-2.5 text-sm font-medium rounded-lg hover:bg-[#2A3B6B] transition-colors shadow-sm"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
             </svg>
-            Nueva Facultad/Escuela
-          </span>
-        </button>
-      </div>
+            Agregar nueva facultad
+          </button>
+        </div>
 
-      {/* Estadísticas */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-200">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-slate-600">Total</p>
-              <p className="text-2xl font-bold text-[#202C59]">4</p>
-            </div>
-            <div className="p-3 bg-[#202C59]/10 rounded-lg">
-              <svg className="w-6 h-6 text-[#202C59]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        {/* Estadísticas - Facultades y Carreras */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl">
+          <StatsCard
+            title="Facultades"
+            value={stats.total}
+            icon={
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" className="w-full h-full">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 14l9-5-9-5-9 5 9 5z" />
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
               </svg>
-            </div>
-          </div>
+            }
+            iconBgColor="bg-indigo-50"
+            iconColor="text-indigo-600"
+            valueColor="text-indigo-600"
+          />
+
+          <StatsCard
+            title="Carreras"
+            value={stats.totalCarreras}
+            icon={
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" className="w-full h-full">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+              </svg>
+            }
+            iconBgColor="bg-emerald-50"
+            iconColor="text-emerald-600"
+            valueColor="text-emerald-600"
+          />
         </div>
 
-        <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-200">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-slate-600">Facultades</p>
-              <p className="text-2xl font-bold text-blue-600">2</p>
-            </div>
-            <div className="p-3 bg-blue-100 rounded-lg">
-              <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-6 0h6" />
-              </svg>
-            </div>
-          </div>
-        </div>
+        {/* Filtros */}
+        <FilterBar
+          searchTerm={filters.searchTerm}
+          onSearchChange={(term) => setFilters(prev => ({ ...prev, searchTerm: term }))}
+          searchPlaceholder="Buscar facultades..."
+          filters={[
+            {
+              label: 'Institución',
+              value: filters.institucionFilter,
+              options: [
+                { value: 'all', label: 'Todas las instituciones' },
+                { value: 'UP MX', label: 'UP MX' },
+                { value: 'UP AGS', label: 'UP AGS' },
+                { value: 'UP GDL', label: 'UP GDL' },
+                { value: 'IPADE', label: 'IPADE' }
+              ],
+              onChange: (value) => setFilters(prev => ({ ...prev, institucionFilter: value }))
+            }
+          ]}
+          viewMode={viewMode}
+          onViewModeChange={setViewMode}
+          showViewToggle={true}
+        />
 
-        <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-200">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-slate-600">Escuelas</p>
-              <p className="text-2xl font-bold text-purple-600">2</p>
-            </div>
-            <div className="p-3 bg-purple-100 rounded-lg">
-              <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-              </svg>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-200">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-slate-600">Total Estudiantes</p>
-              <p className="text-2xl font-bold text-green-600">3,110</p>
-            </div>
-            <div className="p-3 bg-green-100 rounded-lg">
-              <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
-              </svg>
-            </div>
-          </div>
-        </div>
+        {/* Tabla */}
+        <DataTable
+          title={`Facultades (${filteredData.length})`}
+          columns={columns}
+          data={filteredData}
+          actions={tableActions}
+          showAddButton={false}
+        />
       </div>
 
-      {/* Filtros */}
-      <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-200">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {/* Búsqueda */}
-          <div className="relative">
-            <input
-              type="text"
-              placeholder="Buscar facultades/escuelas..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#202C59] focus:border-[#202C59]"
-            />
-            <svg className="absolute left-3 top-2.5 w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-          </div>
-
-          {/* Filtro por tipo */}
-          <select
-            value={typeFilter}
-            onChange={(e) => setTypeFilter(e.target.value)}
-            className="border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#202C59] focus:border-[#202C59]"
-          >
-            <option value="all">Todos los tipos</option>
-            <option value="faculty">Facultades</option>
-            <option value="school">Escuelas</option>
-          </select>
-
-          {/* Filtro por institución */}
-          <select
-            value={institutionFilter}
-            onChange={(e) => setInstitutionFilter(e.target.value)}
-            className="border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#202C59] focus:border-[#202C59]"
-          >
-            <option value="all">Todas las instituciones</option>
-            {institutions.map((institution) => (
-              <option key={institution} value={institution}>{institution}</option>
-            ))}
-          </select>
-        </div>
-      </div>
-
-      {/* Lista de facultades/escuelas */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {faculties.map((faculty) => (
-          <div key={faculty.id} className="bg-white rounded-xl p-6 shadow-sm border border-slate-200 hover:shadow-md transition-shadow">
-            <div className="flex items-start justify-between mb-4">
-              <div className="flex-1">
-                <div className="flex items-center space-x-2 mb-2">
-                  <h3 className="text-lg font-semibold text-slate-900">{faculty.name}</h3>
-                  <span className={`px-2 py-1 text-xs font-medium rounded-full ${getTypeColor(faculty.type)}`}>
-                    {getTypeText(faculty.type)}
-                  </span>
-                </div>
-                <p className="text-sm text-slate-600">{faculty.institution}</p>
-              </div>
-              <div className="flex space-x-2">
-                <button className="p-2 text-slate-400 hover:text-[#202C59] transition-colors">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                  </svg>
-                </button>
-                <button className="p-2 text-slate-400 hover:text-red-600 transition-colors">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                  </svg>
-                </button>
-              </div>
-            </div>
-
-            <div className="space-y-3">
-              <div className="flex items-center text-sm text-slate-600">
-                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                </svg>
-                Decano/Director: <span className="font-medium text-slate-900 ml-1">{faculty.dean}</span>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="text-center p-3 bg-slate-50 rounded-lg">
-                  <p className="text-lg font-bold text-[#202C59]">{faculty.students}</p>
-                  <p className="text-xs text-slate-600">Estudiantes</p>
-                </div>
-                <div className="text-center p-3 bg-slate-50 rounded-lg">
-                  <p className="text-lg font-bold text-[#202C59]">{faculty.programs}</p>
-                  <p className="text-xs text-slate-600">Programas</p>
-                </div>
-              </div>
-
-              <div className="pt-3 border-t border-slate-200">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs text-slate-500">
-                    Creado: {new Date(faculty.createdAt).toLocaleDateString()}
-                  </span>
-                  <span className="text-xs text-green-600 font-medium">Activa</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
+      {/* Modal para crear facultad */}
+      <CreateFacultyModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        onSubmit={handleCreateFacultySubmit}
+        isLoading={isCreatingFaculty}
+      />
     </div>
   );
 }; 
