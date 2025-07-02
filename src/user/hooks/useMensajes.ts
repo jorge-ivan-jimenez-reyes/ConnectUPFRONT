@@ -294,6 +294,14 @@ export const useMensajes = () => {
     return conversacion.participantes.find(p => p.id !== usuarioActual.id) || conversacion.participantes[0];
   }, [usuarioActual.id]);
 
+  // Cerrar conversación activa
+  const cerrarConversacion = useCallback(() => {
+    setEstado(prev => ({
+      ...prev,
+      conversacionActiva: undefined
+    }));
+  }, []);
+
   return {
     // Estado
     estado,
@@ -305,6 +313,7 @@ export const useMensajes = () => {
     seleccionarConversacion,
     enviarMensaje,
     marcarComoLeido,
+    cerrarConversacion,
 
     // Utilidades
     obtenerTiempoRelativo,

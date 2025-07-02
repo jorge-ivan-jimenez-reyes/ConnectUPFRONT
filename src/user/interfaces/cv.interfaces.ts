@@ -6,6 +6,8 @@ export interface DatosBasicos {
   tipoDocumento: string;
   numeroDocumento: string;
   fechaNacimiento: string;
+  nombramientoActual?: string;
+  fechaIngresoUniversidad?: string;
   genero: string;
   estadoCivil: string;
   nacionalidad: string;

@@ -1,9 +1,11 @@
 import React from 'react';
 import { useCV } from '../../hooks/useCV';
+import { useCVContext } from '../../context/CVContext';
 import { DatosBasicos } from '../../interfaces/cv.interfaces';
 import { FaArrowLeft, FaSave } from 'react-icons/fa';
 
 export const FormularioDatosBasicos: React.FC = () => {
+  const { volverAlMenu } = useCVContext();
   const { 
     cvData, 
     actualizarDatosBasicos, 
@@ -14,15 +16,14 @@ export const FormularioDatosBasicos: React.FC = () => {
     isLoading
   } = useCV();
 
-  const datos = cvData.datosBasicos || {};
+  const datos = cvData.datosBasicos || {} as DatosBasicos;
 
   const handleInputChange = (campo: keyof DatosBasicos, valor: string) => {
     actualizarDatosBasicos({ [campo]: valor });
   };
 
   const handleVolver = () => {
-    // Volver a la vista principal del CV
-    window.history.back();
+    volverAlMenu();
   };
 
   const handleGuardar = () => {
@@ -41,8 +42,8 @@ export const FormularioDatosBasicos: React.FC = () => {
             <FaArrowLeft size={20} />
           </button>
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Datos básicos</h1>
-            <p className="text-gray-600 mt-2">Información personal y de contacto</p>
+            <h1 className="text-3xl font-bold text-gray-900">Tu CV</h1>
+            <p className="text-gray-600 mt-2">Datos básicos</p>
           </div>
         </div>
         
@@ -63,200 +64,108 @@ export const FormularioDatosBasicos: React.FC = () => {
         </div>
       </div>
 
-      {/* Formulario */}
-      <div className="bg-white rounded-lg shadow-sm border">
+      {/* Formulario de Datos Básicos */}
+      <div className="bg-white rounded-2xl border-2 border-dashed border-gray-300">
+        <div className="px-6 py-4 border-b border-gray-200">
+          <h2 className="text-lg font-semibold text-gray-900">Datos Básicos</h2>
+        </div>
         <div className="p-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Nombres */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Nombres <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                value={datos.nombres || ''}
-                onChange={(e) => handleInputChange('nombres', e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-primary focus:border-brand-primary"
-                placeholder="Ingresa tus nombres"
-              />
-            </div>
-
-            {/* Apellidos */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Apellidos <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                value={datos.apellidos || ''}
-                onChange={(e) => handleInputChange('apellidos', e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-primary focus:border-brand-primary"
-                placeholder="Ingresa tus apellidos"
-              />
-            </div>
-
-            {/* Tipo de documento */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Tipo de documento <span className="text-red-500">*</span>
-              </label>
-              <select
-                value={datos.tipoDocumento || ''}
-                onChange={(e) => handleInputChange('tipoDocumento', e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-primary focus:border-brand-primary"
-              >
-                <option value="">Selecciona el tipo</option>
-                <option value="cedula">Cédula de ciudadanía</option>
-                <option value="pasaporte">Pasaporte</option>
-                <option value="tarjeta-identidad">Tarjeta de identidad</option>
-              </select>
-            </div>
-
-            {/* Número de documento */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Número de documento <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                value={datos.numeroDocumento || ''}
-                onChange={(e) => handleInputChange('numeroDocumento', e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-primary focus:border-brand-primary"
-                placeholder="Número de identificación"
-              />
-            </div>
-
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* Fecha de nacimiento */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Fecha de nacimiento <span className="text-red-500">*</span>
+                Fecha de nacimiento
               </label>
-              <input
-                type="date"
-                value={datos.fechaNacimiento || ''}
-                onChange={(e) => handleInputChange('fechaNacimiento', e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-primary focus:border-brand-primary"
-              />
+                             <input
+                 type="date"
+                 value={datos.fechaNacimiento || ''}
+                 onChange={(e) => handleInputChange('fechaNacimiento', e.target.value)}
+                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-primary focus:border-brand-primary bg-white"
+               />
             </div>
 
-            {/* Género */}
+            {/* Nombramiento actual */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Género
+                Nombramiento actual
               </label>
-              <select
-                value={datos.genero || ''}
-                onChange={(e) => handleInputChange('genero', e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-primary focus:border-brand-primary"
-              >
-                <option value="">Selecciona el género</option>
-                <option value="masculino">Masculino</option>
-                <option value="femenino">Femenino</option>
-                <option value="otro">Otro</option>
-                <option value="prefiero-no-decir">Prefiero no decir</option>
-              </select>
+                             <input
+                 type="text"
+                 value={datos.nombramientoActual || ''}
+                 onChange={(e) => handleInputChange('nombramientoActual', e.target.value)}
+                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-primary focus:border-brand-primary bg-white"
+                 placeholder="Profesor Titular"
+               />
             </div>
 
-            {/* Email */}
+            {/* Fecha de ingreso a la Universidad */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Correo electrónico <span className="text-red-500">*</span>
+                Fecha de ingreso a la Universidad
               </label>
-              <input
-                type="email"
-                value={datos.email || ''}
-                onChange={(e) => handleInputChange('email', e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-primary focus:border-brand-primary"
-                placeholder="correo@ejemplo.com"
-              />
+                             <input
+                 type="date"
+                 value={datos.fechaIngresoUniversidad || ''}
+                 onChange={(e) => handleInputChange('fechaIngresoUniversidad', e.target.value)}
+                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-primary focus:border-brand-primary bg-white"
+               />
             </div>
+          </div>
 
-            {/* Teléfono */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Teléfono <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="tel"
-                value={datos.telefono || ''}
-                onChange={(e) => handleInputChange('telefono', e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-primary focus:border-brand-primary"
-                placeholder="+57 300 123 4567"
-              />
+                     {/* Botón para agregar más campos */}
+           <div className="flex justify-center mt-6">
+             <button className="group w-8 h-8 border-2 border-gray-300 text-gray-400 rounded-full flex items-center justify-center hover:border-brand-primary hover:text-brand-primary transition-all duration-200 hover:scale-105">
+               <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+               </svg>
+             </button>
+           </div>
+        </div>
+      </div>
+
+             {/* Información Registrada */}
+       {(datos.fechaNacimiento || datos.nombramientoActual || datos.fechaIngresoUniversidad) && (
+         <div className="bg-brand-primary text-white rounded-xl">
+                     <div className="px-6 py-4 border-b border-white/20">
+            <h3 className="text-lg font-semibold">Información Registrada</h3>
+          </div>
+          <div className="p-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                             <div>
+                 <p className="text-white/70 text-sm">Fecha de nacimiento</p>
+                <p className="font-medium">
+                  {datos.fechaNacimiento ? 
+                    new Date(datos.fechaNacimiento).toLocaleDateString('es-ES') : 
+                    '1/02/1972'
+                  }
+                </p>
+              </div>
+                             <div>
+                 <p className="text-white/70 text-sm">Nombramiento actual</p>
+                <p className="font-medium">{datos.nombramientoActual || 'Dr. Juan Glez'}</p>
+              </div>
+                             <div>
+                 <p className="text-white/70 text-sm">Fecha de ingreso</p>
+                <p className="font-medium">
+                  {datos.fechaIngresoUniversidad ? 
+                    new Date(datos.fechaIngresoUniversidad).toLocaleDateString('es-ES') : 
+                    '1/08/2022'
+                  }
+                </p>
+              </div>
             </div>
-
-            {/* Dirección */}
-            <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Dirección
-              </label>
-              <input
-                type="text"
-                value={datos.direccion || ''}
-                onChange={(e) => handleInputChange('direccion', e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-primary focus:border-brand-primary"
-                placeholder="Calle 123 #45-67"
-              />
-            </div>
-
-            {/* Ciudad */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Ciudad
-              </label>
-              <input
-                type="text"
-                value={datos.ciudad || ''}
-                onChange={(e) => handleInputChange('ciudad', e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-primary focus:border-brand-primary"
-                placeholder="Ciudad de residencia"
-              />
-            </div>
-
-            {/* País */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                País
-              </label>
-              <input
-                type="text"
-                value={datos.pais || ''}
-                onChange={(e) => handleInputChange('pais', e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-primary focus:border-brand-primary"
-                placeholder="País de residencia"
-              />
-            </div>
-
-            {/* LinkedIn */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                LinkedIn (opcional)
-              </label>
-              <input
-                type="url"
-                value={datos.linkedin || ''}
-                onChange={(e) => handleInputChange('linkedin', e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-primary focus:border-brand-primary"
-                placeholder="https://linkedin.com/in/usuario"
-              />
-            </div>
-
-            {/* Sitio web */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Sitio web (opcional)
-              </label>
-              <input
-                type="url"
-                value={datos.sitioWeb || ''}
-                onChange={(e) => handleInputChange('sitioWeb', e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-primary focus:border-brand-primary"
-                placeholder="https://miportfolio.com"
-              />
+            
+            <div className="flex justify-end mt-6">
+              <button className="flex items-center gap-2 px-4 py-2 bg-white/20 text-white rounded-lg hover:bg-white/30 transition-colors">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                </svg>
+                Editar
+              </button>
             </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Botones de navegación */}
       <div className="flex justify-between">
@@ -272,7 +181,7 @@ export const FormularioDatosBasicos: React.FC = () => {
           disabled={isLoading}
           className="bg-brand-primary text-white px-6 py-3 rounded-lg hover:bg-brand-primary/90 transition-colors disabled:opacity-50"
         >
-          {isLoading ? 'Guardando...' : 'Guardar y continuar'}
+          {isLoading ? 'Guardando...' : 'Guardar información'}
         </button>
       </div>
     </div>

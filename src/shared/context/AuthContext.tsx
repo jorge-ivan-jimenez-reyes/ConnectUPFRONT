@@ -121,13 +121,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       // const response = await authService.verifyToken(token);
       // const user = UserModel.fromApiResponse(response.data.user);
       
+      // Detectar el tipo de usuario basado en la URL actual
+      const currentPath = window.location.pathname;
+      const isAdminPath = currentPath.startsWith('/admin');
+      
       // Por ahora, simular usuario válido
       const mockUser = UserModel.createEmpty();
       mockUser.id = '1';
-      mockUser.email = 'admin@sistema.com';
-      mockUser.firstName = 'Admin';
-      mockUser.lastName = 'Sistema';
-      mockUser.role = 'admin';
+      mockUser.email = isAdminPath ? 'admin@sistema.com' : 'usuario@sistema.com';
+      mockUser.firstName = isAdminPath ? 'Admin' : 'Usuario';
+      mockUser.lastName = isAdminPath ? 'Sistema' : 'Docente';
+      mockUser.role = isAdminPath ? 'admin' : 'user';
       
       dispatch({
         type: 'AUTH_SUCCESS',

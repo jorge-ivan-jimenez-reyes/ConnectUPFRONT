@@ -36,17 +36,24 @@ export { CeldaDisponibilidad } from './Disponibilidad/CeldaDisponibilidad';
 // Mi CV Components
 export { NavegacionCV } from './MiCV/NavegacionCV';
 export { FormularioDatosBasicos } from './MiCV/FormularioDatosBasicos';
+export { FormularioFormacionAcademica } from './MiCV/FormularioFormacionAcademica';
+export { FormularioCapacitacionDocente } from './MiCV/FormularioCapacitacionDocente';
+export { FormularioActualizacionDisciplinar } from './MiCV/FormularioActualizacionDisciplinar';
+export { FormularioGestionAcademica } from './MiCV/FormularioGestionAcademica';
+export { FormularioProductosAcademicos } from './MiCV/FormularioProductosAcademicos';
+export { FormularioExperienciaProfesional } from './MiCV/FormularioExperienciaProfesional';
+export { FormularioLogrosProfesionales } from './MiCV/FormularioLogrosProfesionales';
+export { FormularioParticipacionInstituciones } from './MiCV/FormularioParticipacionInstituciones';
+export { FormularioReconocimientos } from './MiCV/FormularioReconocimientos';
+export { FormularioAportacionesRelevantes } from './MiCV/FormularioAportacionesRelevantes';
 export { GestorCV } from './MiCV/GestorCV';
 
+// Mensajes Components
+export { ChatConversacion } from './Mensajes/ChatConversacion';
+export { ListaConversaciones } from './Mensajes/ListaConversaciones';
+
 // User components exports
-export * from './Layout';
-export * from './Sidebar';
-export * from './StatsCards';
-export * from './HorarioClases';
-export * from './BannerPromocional';
-export * from './AccionesRapidas';
-export * from './MisClases';
-export * from './Temarios';
 export * from './Horarios';
 export * from './Disponibilidad';
-export * from './MiCV'; 
+export * from './MiCV';
+export * from './Mensajes'; 

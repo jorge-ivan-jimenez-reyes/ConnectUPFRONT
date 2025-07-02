@@ -3,6 +3,15 @@ import { useCVContext } from '../../context/CVContext';
 import { SeccionesCV } from '../../interfaces/cv.interfaces';
 import { NavegacionCV } from './NavegacionCV';
 import { FormularioDatosBasicos } from './FormularioDatosBasicos';
+import { FormularioFormacionAcademica } from './FormularioFormacionAcademica';
+import { FormularioCapacitacionDocente } from './FormularioCapacitacionDocente';
+import { FormularioGestionAcademica } from './FormularioGestionAcademica';
+import { FormularioProductosAcademicos } from './FormularioProductosAcademicos';
+import { FormularioExperienciaProfesional } from './FormularioExperienciaProfesional';
+import { FormularioLogrosProfesionales } from './FormularioLogrosProfesionales';
+import { FormularioParticipacionInstituciones } from './FormularioParticipacionInstituciones';
+import { FormularioReconocimientos } from './FormularioReconocimientos';
+import { FormularioAportacionesRelevantes } from './FormularioAportacionesRelevantes';
 
 export const GestorCV: React.FC = () => {
   const { seccionActiva } = useCVContext();
@@ -13,34 +22,34 @@ export const GestorCV: React.FC = () => {
         return <FormularioDatosBasicos />;
       
       case SeccionesCV.FORMACION_ACADEMICA:
-        return <FormularioEnDesarrollo seccion="Formación académica" />;
+        return <FormularioFormacionAcademica />;
         
       case SeccionesCV.CAPACITACION_DOCENTE:
-        return <FormularioEnDesarrollo seccion="Capacitación docente" />;
+        return <FormularioCapacitacionDocente />;
         
       case SeccionesCV.ACTUALIZACION_DISCIPLINAR:
-        return <FormularioEnDesarrollo seccion="Actualización disciplinar" />;
+        return <FormularioEnDesarrollo seccion="Actualización Disciplinar" />;
         
       case SeccionesCV.GESTION_ACADEMICA:
-        return <FormularioEnDesarrollo seccion="Gestión académica" />;
+        return <FormularioGestionAcademica />;
         
       case SeccionesCV.PRODUCTOS_ACADEMICOS:
-        return <FormularioEnDesarrollo seccion="Productos académicos" />;
+        return <FormularioProductosAcademicos />;
         
       case SeccionesCV.EXPERIENCIA_PROFESIONAL:
-        return <FormularioEnDesarrollo seccion="Experiencia profesional no académica" />;
+        return <FormularioExperienciaProfesional />;
         
       case SeccionesCV.LOGROS_PROFESIONALES:
-        return <FormularioEnDesarrollo seccion="Logros profesionales" />;
+        return <FormularioLogrosProfesionales />;
         
       case SeccionesCV.PARTICIPACION_INSTITUCIONES:
-        return <FormularioEnDesarrollo seccion="Participación en instituciones" />;
+        return <FormularioParticipacionInstituciones />;
         
       case SeccionesCV.RECONOCIMIENTOS:
-        return <FormularioEnDesarrollo seccion="Reconocimientos obtenidos" />;
+        return <FormularioReconocimientos />;
         
       case SeccionesCV.APORTACIONES_RELEVANTES:
-        return <FormularioEnDesarrollo seccion="Aportaciones relevantes" />;
+        return <FormularioAportacionesRelevantes />;
         
       default:
         return <NavegacionCV />;
