@@ -2,5 +2,9 @@
 export { MiEspacio } from './MiEspacio';
 export { Instituciones } from './Instituciones';
 export { Facultades } from './Facultades';
+export { Academias } from './Academias';
+export { Carreras } from './Carreras';
+export { Materias } from './Materias';
+export { CicloAcademico } from './CicloAcademico';
 export { Reportes } from './Reportes';
 export { Usuarios } from './Usuarios'; 

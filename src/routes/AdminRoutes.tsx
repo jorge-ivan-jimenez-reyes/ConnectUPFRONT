@@ -3,7 +3,17 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { AdminLayout } from '../admin/components';
-import { MiEspacio, Instituciones, Facultades, Reportes, Usuarios } from '../admin/views';
+import { 
+  MiEspacio, 
+  Instituciones, 
+  Facultades, 
+  Academias, 
+  Carreras, 
+  Materias, 
+  CicloAcademico, 
+  Reportes, 
+  Usuarios 
+} from '../admin/views';
 
 export const AdminRoutes: React.FC = () => {
   return (
@@ -16,6 +26,10 @@ export const AdminRoutes: React.FC = () => {
         <Route path="mi-espacio" element={<MiEspacio />} />
         <Route path="instituciones" element={<Instituciones />} />
         <Route path="facultades" element={<Facultades />} />
+        <Route path="academias" element={<Academias />} />
+        <Route path="carreras" element={<Carreras />} />
+        <Route path="materias" element={<Materias />} />
+        <Route path="ciclo-academico" element={<CicloAcademico />} />
         <Route path="reportes" element={<Reportes />} />
         <Route path="usuarios" element={<Usuarios />} />
         
