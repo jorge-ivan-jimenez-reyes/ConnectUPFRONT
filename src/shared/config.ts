@@ -1,6 +1,6 @@
 // Configuración general de la aplicación
 export const CONFIG = {
-  API_BASE_URL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001/api',
+  API_BASE_URL: import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8001/api',
   APP_NAME: 'ConnectUP',
   VERSION: '1.0.0',
   TOKEN_KEY: 'connectup_token',
@@ -12,6 +12,19 @@ export const CONFIG = {
   TIMEOUTS: {
     API_TIMEOUT: 30000,
     AUTH_TIMEOUT: 5000,
+  },
+  API_ENDPOINTS: {
+    AUTH: {
+      JWT_CREATE: '/auth/jwt/create/',
+      JWT_VERIFY: '/auth/jwt/verify/',
+      JWT_REFRESH: '/auth/jwt/refresh/',
+      USER_PROFILE: '/auth/users/me/',
+      REGISTER_USER: '/auth/users/',
+      LOGOUT: '/auth/logout/',
+      CHANGE_PASSWORD: '/auth/users/set_password/',
+      RESET_PASSWORD: '/auth/users/reset_password/',
+      RESET_PASSWORD_CONFIRM: '/auth/users/reset_password_confirm/',
+    }
   },
 } as const;
 

@@ -155,7 +155,7 @@ export interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (credentials: LoginDTO) => Promise<void>;
-  logout: () => void;
+  logout: () => Promise<void>;
   register: (data: RegisterAdminDTO | RegisterUserDTO, type: 'admin' | 'user') => Promise<void>;
   updateUser: (data: UpdateUserDTO) => Promise<void>;
   changePassword: (data: ChangePasswordDTO) => Promise<void>;

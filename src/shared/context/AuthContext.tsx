@@ -4,6 +4,9 @@ import React, { createContext, useContext, useReducer, useEffect, ReactNode } fr
 import { AuthContextType, User, LoginDTO, RegisterAdminDTO, RegisterUserDTO, UpdateUserDTO, ChangePasswordDTO } from '../interfaces';
 import { UserModel } from '../models';
 import { CONFIG } from '../config';
+import { authService } from '../services/authService';
+import { apiService } from '../services/apiService';
+import { logApiResponse, logLoginFlow, validateJWTResponse, createUserFromJWT } from '../utils/debugHelpers';
 
 // Estado del contexto
 interface AuthState {
@@ -117,72 +120,99 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       dispatch({ type: 'AUTH_LOADING' });
       
-      // Simular llamada al backend
-      // const response = await authService.verifyToken(token);
-      // const user = UserModel.fromApiResponse(response.data.user);
-      
-      // Detectar el tipo de usuario basado en la URL actual
-      const currentPath = window.location.pathname;
-      const isAdminPath = currentPath.startsWith('/admin');
-      
-      // Por ahora, simular usuario válido
-      const mockUser = UserModel.createEmpty();
-      mockUser.id = '1';
-      mockUser.email = isAdminPath ? 'admin@sistema.com' : 'usuario@sistema.com';
-      mockUser.firstName = isAdminPath ? 'Admin' : 'Usuario';
-      mockUser.lastName = isAdminPath ? 'Sistema' : 'Docente';
-      mockUser.role = isAdminPath ? 'admin' : 'user';
-      
-      dispatch({
-        type: 'AUTH_SUCCESS',
-        payload: { user: mockUser.toJSON(), token },
-      });
+      // Por ahora, solo verificar que el token existe y crear usuario básico
+      if (token) {
+        // Detectar tipo de usuario basado en localStorage o URL
+        const currentPath = window.location.pathname;
+        const isAdmin = currentPath.startsWith('/admin');
+        
+        // Crear usuario básico
+        const user = createUserFromJWT('usuario@temporal.com', isAdmin);
+        
+        dispatch({
+          type: 'AUTH_SUCCESS',
+          payload: { user, token },
+        });
+        
+        logLoginFlow('Token verificado y usuario creado', { userId: user.id, role: user.role });
+      } else {
+        throw new Error('Token inválido');
+      }
     } catch (error) {
       localStorage.removeItem(CONFIG.TOKEN_KEY);
       localStorage.removeItem(CONFIG.REFRESH_TOKEN_KEY);
-      dispatch({ type: 'AUTH_ERROR', payload: 'Invalid token' });
+      dispatch({ type: 'AUTH_ERROR', payload: 'Token inválido o expirado' });
     }
   };
 
-  // Función de login
+    // Función de login
   const login = async (credentials: LoginDTO): Promise<void> => {
     try {
       dispatch({ type: 'AUTH_LOADING' });
       
-      // Simular llamada al backend
-      // const response = await authService.login(credentials);
+      logLoginFlow('Iniciando login', { email: credentials.email });
       
-      // Detectar si es login de admin basado en la URL actual
-      const isAdminLogin = window.location.pathname.includes('/login/admin');
+      // Detectar el tipo de usuario basado en la URL actual
+      const currentPath = window.location.pathname;
+      const isAdminLogin = currentPath.includes('/login/admin') || currentPath.startsWith('/admin');
       
-      // Simular respuesta exitosa
-      const mockUser = UserModel.createEmpty();
-      mockUser.id = '1';
-      mockUser.email = credentials.email;
-      mockUser.firstName = isAdminLogin ? 'Admin' : 'Usuario';
-      mockUser.lastName = isAdminLogin ? 'Sistema' : 'Docente';
-      mockUser.role = isAdminLogin ? 'admin' : 'user';
+      // Paso 1: Obtener tokens JWT usando el endpoint que funciona
+      const loginEndpoint = CONFIG.API_ENDPOINTS.AUTH.JWT_CREATE;
       
-      const token = 'mock-jwt-token';
+      logLoginFlow('Usando endpoint JWT único', { endpoint: loginEndpoint, isAdminLogin });
       
-      // Guardar token en localStorage
-      localStorage.setItem(CONFIG.TOKEN_KEY, token);
+      const loginResponse = await apiService.post<{ access: string; refresh: string }>(loginEndpoint, {
+        email: credentials.email,
+        password: credentials.password,
+      });
+      
+      logApiResponse(loginEndpoint, loginResponse);
+      
+      // Validar la respuesta JWT
+      const validation = validateJWTResponse(loginResponse);
+      if (!validation.isValid) {
+        console.warn('⚠️ Respuesta JWT incompleta:', validation.issues);
+      }
+      
+      // Paso 2: Crear usuario básico ya que el endpoint /users/me/ no está disponible
+      logLoginFlow('Creando usuario básico desde JWT', { isAdminLogin, email: credentials.email });
+      
+      const user = createUserFromJWT(credentials.email, isAdminLogin);
+      
+      // Guardar tokens en localStorage
+      localStorage.setItem(CONFIG.TOKEN_KEY, loginResponse.access);
+      localStorage.setItem(CONFIG.REFRESH_TOKEN_KEY, loginResponse.refresh);
       
       dispatch({
         type: 'AUTH_SUCCESS',
-        payload: { user: mockUser.toJSON(), token },
+        payload: { user, token: loginResponse.access },
       });
+      
+      logLoginFlow('Login completado exitosamente', { userId: user.id, role: user.role });
     } catch (error) {
-      dispatch({ type: 'AUTH_ERROR', payload: 'Invalid credentials' });
+      logLoginFlow('Error en login', error);
+      const errorMessage = error instanceof Error ? error.message : 'Credenciales incorrectas';
+      dispatch({ type: 'AUTH_ERROR', payload: errorMessage });
       throw error;
     }
   };
 
   // Función de logout
-  const logout = (): void => {
-    localStorage.removeItem(CONFIG.TOKEN_KEY);
-    localStorage.removeItem(CONFIG.REFRESH_TOKEN_KEY);
-    dispatch({ type: 'AUTH_LOGOUT' });
+  const logout = async (): Promise<void> => {
+    try {
+      // Solo limpiar tokens locales por ahora
+      localStorage.removeItem(CONFIG.TOKEN_KEY);
+      localStorage.removeItem(CONFIG.REFRESH_TOKEN_KEY);
+      dispatch({ type: 'AUTH_LOGOUT' });
+      
+      logLoginFlow('Logout completado', { timestamp: new Date().toISOString() });
+    } catch (error) {
+      console.warn('Error en logout:', error);
+      // Asegurar que los tokens se limpien de todos modos
+      localStorage.removeItem(CONFIG.TOKEN_KEY);
+      localStorage.removeItem(CONFIG.REFRESH_TOKEN_KEY);
+      dispatch({ type: 'AUTH_LOGOUT' });
+    }
   };
 
   // Función de registro
