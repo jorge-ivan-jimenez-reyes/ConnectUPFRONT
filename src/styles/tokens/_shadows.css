@@ -1,0 +1,56 @@
+/**
+ * ==========================================================================
+ * SHADOW TOKENS - ConnectUP Design System
+ * ==========================================================================
+ * 
+ * Sistema de sombras para elevación y profundidad
+ */
+
+:root {
+  /* ══════════════════════════════════════════════════════════════════════
+   * BOX SHADOWS
+   * ══════════════════════════════════════════════════════════════════════ */
+  --shadow-none: none;
+  --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  --shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+  --shadow-inner: inset 0 2px 4px 0 rgb(0 0 0 / 0.05);
+
+  /* ══════════════════════════════════════════════════════════════════════
+   * COLORED SHADOWS (para botones y elementos de marca)
+   * ══════════════════════════════════════════════════════════════════════ */
+  --shadow-brand-primary: 0 4px 14px 0 rgb(120 29 50 / 0.25);
+  --shadow-brand-secondary: 0 4px 14px 0 rgb(172 139 84 / 0.25);
+
+  /* ══════════════════════════════════════════════════════════════════════
+   * SEMANTIC SHADOWS - Uso específico
+   * ══════════════════════════════════════════════════════════════════════ */
+  --shadow-card: var(--shadow-sm);
+  --shadow-card-hover: var(--shadow-md);
+  --shadow-dropdown: var(--shadow-lg);
+  --shadow-modal: var(--shadow-xl);
+  --shadow-button: var(--shadow-sm);
+  --shadow-button-hover: var(--shadow-md);
+  --shadow-input-focus: 0 0 0 3px rgb(120 29 50 / 0.1);
+
+  /* ══════════════════════════════════════════════════════════════════════
+   * FOCUS RINGS
+   * ══════════════════════════════════════════════════════════════════════ */
+  --ring-width: 2px;
+  --ring-offset: 2px;
+  --ring-color: var(--color-brand-primary);
+  --ring-opacity: 0.5;
+}
+
+/* Dark Mode Shadows */
+[data-theme="dark"] {
+  --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.3);
+  --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.4), 0 1px 2px -1px rgb(0 0 0 / 0.4);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.4), 0 2px 4px -2px rgb(0 0 0 / 0.4);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.4), 0 4px 6px -4px rgb(0 0 0 / 0.4);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.4), 0 8px 10px -6px rgb(0 0 0 / 0.4);
+  --shadow-input-focus: 0 0 0 3px rgb(210 98 132 / 0.2);
+}

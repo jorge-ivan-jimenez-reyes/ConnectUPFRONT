@@ -1,0 +1,199 @@
+/**
+ * ==========================================================================
+ * COLOR TOKENS - ConnectUP Design System
+ * ==========================================================================
+ * 
+ * Estructura:
+ * 1. Colores Primitivos (paleta base) - NO usar directamente
+ * 2. Colores Semánticos (con propósito) - USAR estos
+ * 3. Colores de Estado (feedback)
+ * 
+ * Nomenclatura: --color-{categoria}-{shade}
+ */
+
+:root {
+  /* ══════════════════════════════════════════════════════════════════════
+   * COLORES PRIMITIVOS - Paleta Base (no usar directamente en componentes)
+   * ══════════════════════════════════════════════════════════════════════ */
+  
+  /* Wine/Vino - Color principal de marca UP */
+  --color-wine-50: #fdf2f4;
+  --color-wine-100: #fbe8eb;
+  --color-wine-200: #f6d5dc;
+  --color-wine-300: #eeb5c1;
+  --color-wine-400: #e28ba2;
+  --color-wine-500: #d26284;
+  --color-wine-600: #bc4264;
+  --color-wine-700: #a02d4c;
+  --color-wine-800: #862741;
+  --color-wine-900: #781d32;
+  --color-wine-950: #420e1c;
+
+  /* Gold/Dorado - Color secundario de marca UP */
+  --color-gold-50: #fdfcf8;
+  --color-gold-100: #fcf8ef;
+  --color-gold-200: #f7efdb;
+  --color-gold-300: #f0e2bf;
+  --color-gold-400: #e7d09e;
+  --color-gold-500: #dcbb7d;
+  --color-gold-600: #d0a863;
+  --color-gold-700: #c19750;
+  --color-gold-800: #ac8b54;
+  --color-gold-900: #8a7043;
+  --color-gold-950: #5e4a2c;
+
+  /* Navy/Azul Marino - Color de acento */
+  --color-navy-50: #f0f3ff;
+  --color-navy-100: #e0e7ff;
+  --color-navy-200: #c7d2fe;
+  --color-navy-300: #a5b4fc;
+  --color-navy-400: #818cf8;
+  --color-navy-500: #6366f1;
+  --color-navy-600: #4f46e5;
+  --color-navy-700: #4338ca;
+  --color-navy-800: #3730a3;
+  --color-navy-900: #202c59;
+  --color-navy-950: #1a2344;
+
+  /* Gray/Gris - Neutros */
+  --color-gray-50: #f9fafb;
+  --color-gray-100: #f3f4f6;
+  --color-gray-200: #e5e7eb;
+  --color-gray-300: #d1d5db;
+  --color-gray-400: #9ca3af;
+  --color-gray-500: #6b7280;
+  --color-gray-600: #4b5563;
+  --color-gray-700: #374151;
+  --color-gray-800: #1f2937;
+  --color-gray-900: #111827;
+  --color-gray-950: #030712;
+
+  /* ══════════════════════════════════════════════════════════════════════
+   * COLORES SEMÁNTICOS - Usar estos en componentes
+   * ══════════════════════════════════════════════════════════════════════ */
+  
+  /* Brand - Identidad de marca */
+  --color-brand-primary: var(--color-wine-900);
+  --color-brand-primary-hover: var(--color-wine-800);
+  --color-brand-primary-active: var(--color-wine-950);
+  --color-brand-primary-light: var(--color-wine-100);
+  
+  --color-brand-secondary: var(--color-gold-800);
+  --color-brand-secondary-hover: var(--color-gold-700);
+  --color-brand-secondary-active: var(--color-gold-900);
+  --color-brand-secondary-light: var(--color-gold-100);
+  
+  --color-brand-accent: var(--color-navy-900);
+  --color-brand-accent-hover: var(--color-navy-800);
+  --color-brand-accent-light: var(--color-navy-100);
+
+  /* Background - Fondos */
+  --color-bg-primary: #ffffff;
+  --color-bg-secondary: var(--color-gray-50);
+  --color-bg-tertiary: var(--color-gray-100);
+  --color-bg-inverse: var(--color-gray-900);
+  --color-bg-brand: var(--color-wine-900);
+  --color-bg-brand-light: var(--color-wine-50);
+  
+  /* Surface - Superficies de componentes */
+  --color-surface-primary: #ffffff;
+  --color-surface-secondary: var(--color-gray-50);
+  --color-surface-elevated: #ffffff;
+  --color-surface-overlay: rgba(0, 0, 0, 0.5);
+
+  /* Text - Textos */
+  --color-text-primary: var(--color-gray-900);
+  --color-text-secondary: var(--color-gray-600);
+  --color-text-tertiary: var(--color-gray-500);
+  --color-text-muted: var(--color-gray-400);
+  --color-text-inverse: #ffffff;
+  --color-text-brand: var(--color-wine-900);
+  --color-text-link: var(--color-wine-700);
+  --color-text-link-hover: var(--color-wine-900);
+
+  /* Border - Bordes */
+  --color-border-primary: var(--color-gray-200);
+  --color-border-secondary: var(--color-gray-300);
+  --color-border-focus: var(--color-brand-primary);
+  --color-border-error: var(--color-error-500);
+
+  /* ══════════════════════════════════════════════════════════════════════
+   * COLORES DE ESTADO - Feedback
+   * ══════════════════════════════════════════════════════════════════════ */
+  
+  /* Success */
+  --color-success-50: #f0fdf4;
+  --color-success-100: #dcfce7;
+  --color-success-200: #bbf7d0;
+  --color-success-500: #22c55e;
+  --color-success-600: #16a34a;
+  --color-success-700: #15803d;
+
+  /* Warning */
+  --color-warning-50: #fffbeb;
+  --color-warning-100: #fef3c7;
+  --color-warning-200: #fde68a;
+  --color-warning-500: #f59e0b;
+  --color-warning-600: #d97706;
+  --color-warning-700: #b45309;
+
+  /* Error */
+  --color-error-50: #fef2f2;
+  --color-error-100: #fee2e2;
+  --color-error-200: #fecaca;
+  --color-error-500: #ef4444;
+  --color-error-600: #dc2626;
+  --color-error-700: #b91c1c;
+
+  /* Info */
+  --color-info-50: #eff6ff;
+  --color-info-100: #dbeafe;
+  --color-info-200: #bfdbfe;
+  --color-info-500: #3b82f6;
+  --color-info-600: #2563eb;
+  --color-info-700: #1d4ed8;
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+ * DARK MODE
+ * ══════════════════════════════════════════════════════════════════════ */
+
+[data-theme="dark"] {
+  /* Background */
+  --color-bg-primary: var(--color-gray-900);
+  --color-bg-secondary: var(--color-gray-800);
+  --color-bg-tertiary: var(--color-gray-700);
+  --color-bg-inverse: #ffffff;
+  
+  /* Surface */
+  --color-surface-primary: var(--color-gray-800);
+  --color-surface-secondary: var(--color-gray-700);
+  --color-surface-elevated: var(--color-gray-800);
+  --color-surface-overlay: rgba(0, 0, 0, 0.7);
+
+  /* Text */
+  --color-text-primary: var(--color-gray-50);
+  --color-text-secondary: var(--color-gray-300);
+  --color-text-tertiary: var(--color-gray-400);
+  --color-text-muted: var(--color-gray-500);
+  --color-text-inverse: var(--color-gray-900);
+  --color-text-link: var(--color-wine-400);
+  --color-text-link-hover: var(--color-wine-300);
+
+  /* Border */
+  --color-border-primary: var(--color-gray-700);
+  --color-border-secondary: var(--color-gray-600);
+}
+
+/* Soporte para preferencia del sistema */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --color-bg-primary: var(--color-gray-900);
+    --color-bg-secondary: var(--color-gray-800);
+    --color-bg-tertiary: var(--color-gray-700);
+    --color-surface-primary: var(--color-gray-800);
+    --color-text-primary: var(--color-gray-50);
+    --color-text-secondary: var(--color-gray-300);
+    --color-border-primary: var(--color-gray-700);
+  }
+}
