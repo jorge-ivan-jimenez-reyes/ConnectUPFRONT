@@ -19,3 +19,52 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* ══════════════════════════════════════════════════════════════════════
+ * OVERRIDES POST-TAILWIND (máxima especificidad - fuera de @layer)
+ * ══════════════════════════════════════════════════════════════════════ */
+
+/* Clase utilitaria para forzar texto oscuro en inputs */
+.input-light,
+input.input-light,
+textarea.input-light,
+select.input-light {
+  color: #111827 !important;
+  -webkit-text-fill-color: #111827 !important;
+  caret-color: #111827 !important;
+  color-scheme: light !important;
+}
+
+/* Forzar esquema de colores claro en contenedores light */
+[data-theme="light"] {
+  color-scheme: light !important;
+}
+
+.input-light::placeholder {
+  color: #9ca3af !important;
+  -webkit-text-fill-color: #9ca3af !important;
+}
+
+/* Selectores genéricos para inputs con bg-white */
+input.bg-white,
+input[class*="bg-white"],
+textarea.bg-white,
+select.bg-white {
+  color: #111827 !important;
+  -webkit-text-fill-color: #111827 !important;
+  caret-color: #111827 !important;
+}
+
+/* Dark mode override específico */
+@media (prefers-color-scheme: dark) {
+  input.bg-white,
+  input[class*="bg-white"],
+  input.input-light,
+  textarea.bg-white,
+  select.bg-white {
+    color: #111827 !important;
+    -webkit-text-fill-color: #111827 !important;
+    caret-color: #111827 !important;
+    background-color: white !important;
+  }
+}

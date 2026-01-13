@@ -7,3 +7,4 @@ export { useFaculties, useFacultiesDropdown } from './useFaculties';
 export { useAcademies, useAcademiesDropdown } from './useAcademies';
 export { usePrograms, useProgramsDropdown } from './usePrograms';
 export { useCycles, useCyclesDropdown } from './useCycles';
+export { useCourses, useCoursesDropdown } from './useCourses';

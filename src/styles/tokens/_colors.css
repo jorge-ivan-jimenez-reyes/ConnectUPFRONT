@@ -185,15 +185,13 @@
   --color-border-secondary: var(--color-gray-600);
 }
 
-/* Soporte para preferencia del sistema */
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --color-bg-primary: var(--color-gray-900);
-    --color-bg-secondary: var(--color-gray-800);
-    --color-bg-tertiary: var(--color-gray-700);
-    --color-surface-primary: var(--color-gray-800);
-    --color-text-primary: var(--color-gray-50);
-    --color-text-secondary: var(--color-gray-300);
-    --color-border-primary: var(--color-gray-700);
-  }
+/* 
+ * NOTA: Se quitó @media (prefers-color-scheme: dark) automático.
+ * El dark mode solo se activa con data-theme="dark" explícito.
+ */
+
+/* Forzar modo light en elementos con data-theme="light" */
+[data-theme="light"] {
+  --color-text-primary: var(--color-gray-900);
+  --color-text-secondary: var(--color-gray-600);
 }

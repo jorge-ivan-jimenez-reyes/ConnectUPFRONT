@@ -59,7 +59,7 @@ export const LoginUser: React.FC = () => {
       <div className="absolute inset-0 bg-black/20"></div>
       
       <div className="max-w-md w-full space-y-8 relative z-10">
-        <div className="bg-white/95 backdrop-blur-sm rounded-xl shadow-2xl p-8">
+        <div className="bg-white/95 backdrop-blur-sm rounded-xl shadow-2xl p-8" data-theme="light">
           <div className="text-center mb-8">
             <Link to={ROUTES.HOME} className="text-3xl font-bold text-brand-primary hover:text-primary-700 transition-colors">
               {CONFIG.APP_NAME}
@@ -88,7 +88,7 @@ export const LoginUser: React.FC = () => {
                   name="email"
                   value={formData.email}
                   onChange={handleInputChange}
-                  className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-brand-primary focus:border-brand-primary sm:text-sm bg-white"
+                  className="input-light block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-brand-primary focus:border-brand-primary sm:text-sm bg-white"
                   placeholder="docente@institucion.edu"
                   required
                 />
@@ -104,7 +104,7 @@ export const LoginUser: React.FC = () => {
                   name="password"
                   value={formData.password}
                   onChange={handleInputChange}
-                  className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-brand-primary focus:border-brand-primary sm:text-sm bg-white"
+                  className="input-light block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-brand-primary focus:border-brand-primary sm:text-sm bg-white"
                   placeholder="••••••••"
                   required
                 />
