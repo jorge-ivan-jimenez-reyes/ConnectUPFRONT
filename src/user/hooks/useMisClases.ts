@@ -1,159 +1,131 @@
-import { useState, useEffect } from 'react';
-import { ClaseDetalle } from '../interfaces/clase.interfaces';
+/**
+ * Hook para gestionar Mis Clases (horario del docente)
+ * 
+ * Conecta con el endpoint /v2/course-info/my-schedule/
+ */
 
-export const useMisClases = () => {
+import { useState, useEffect, useCallback } from 'react';
+import { myClassesService, cyclesUserService, CourseInfoAPI, CycleDropdownAPI } from '../services/userApiServices';
+import { ClaseDetalle, HorarioClase } from '../interfaces/clase.interfaces';
+
+// Mapeo de día numérico a código corto
+const DAY_MAP: Record<number, string> = {
+  1: 'Lu',
+  2: 'Ma',
+  3: 'Mi',
+  4: 'Ju',
+  5: 'Vi',
+  6: 'Sa',
+};
+
+/**
+ * Transforma los datos del backend al formato del frontend
+ */
+const transformCourseInfo = (course: CourseInfoAPI): ClaseDetalle => {
+  const horarios: HorarioClase[] = course.schedule.map(s => ({
+    dia: DAY_MAP[s.day] || s.day_field,
+    horaInicio: s.start_hour.slice(0, 5), // "16:00:00" -> "16:00"
+    horaFin: s.end_hour.slice(0, 5),
+    aula: s.classroom || 'Sin asignar',
+  }));
+
+  return {
+    id: String(course.id),
+    materia: course.course_name || course.course_id?.name || 'Sin nombre',
+    codigo: course.course_code || course.course_id?.code,
+    profesor: course.user_name || undefined,
+    ciclo: course.cycle_name || String(course.cycle_id),
+    horarios,
+    estudiantes: undefined, // No viene del backend
+    creditos: undefined, // No viene del backend
+  };
+};
+
+interface UseMisClasesResult {
+  clases: ClaseDetalle[];
+  isLoading: boolean;
+  error: string | null;
+  cicloSeleccionado: string;
+  setCicloSeleccionado: (ciclo: string) => void;
+  ciclosDisponibles: { id: string; nombre: string }[];
+  refetch: () => void;
+}
+
+export const useMisClases = (): UseMisClasesResult => {
   const [clases, setClases] = useState<ClaseDetalle[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [cicloSeleccionado, setCicloSeleccionado] = useState('1238');
+  const [error, setError] = useState<string | null>(null);
+  const [cicloSeleccionado, setCicloSeleccionado] = useState<string>('');
+  const [ciclosDisponibles, setCiclosDisponibles] = useState<{ id: string; nombre: string }[]>([]);
 
-  // Mock data para las clases
-  const mockClases: ClaseDetalle[] = [
-    {
-      id: '1',
-      materia: 'Programación',
-      codigo: 'PROG-101',
-      profesor: 'Dr. García López',
-      ciclo: '1238',
-      horarios: [
-        {
-          dia: 'Lu',
-          horaInicio: '16:00',
-          horaFin: '18:30',
-          aula: 'V_LAB_ADIG'
-        },
-        {
-          dia: 'Ma',
-          horaInicio: '16:00',
-          horaFin: '18:30',
-          aula: 'CDC_B'
-        },
-        {
-          dia: 'Mi',
-          horaInicio: '16:00',
-          horaFin: '18:30',
-          aula: 'R36'
-        }
-      ],
-      estudiantes: 28,
-      creditos: 4
-    },
-    {
-      id: '2',
-      materia: 'Matemáticas',
-      codigo: 'MATH-201',
-      profesor: 'Dra. María Rodríguez',
-      ciclo: '1238',
-      horarios: [
-        {
-          dia: 'Lu',
-          horaInicio: '16:00',
-          horaFin: '18:30',
-          aula: 'V_LAB_ADIG'
-        },
-        {
-          dia: 'Ma',
-          horaInicio: '16:00',
-          horaFin: '18:30',
-          aula: 'CDC_B'
-        }
-      ],
-      estudiantes: 32,
-      creditos: 3
-    },
-    {
-      id: '3',
-      materia: 'Diseño',
-      codigo: 'DIS-301',
-      profesor: 'Mg. Carlos Mendoza',
-      ciclo: '1238',
-      horarios: [
-        {
-          dia: 'Lu',
-          horaInicio: '16:00',
-          horaFin: '18:30',
-          aula: 'V_LAB_ADIG'
-        },
-        {
-          dia: 'Ma',
-          horaInicio: '16:00',
-          horaFin: '18:30',
-          aula: 'CDC_B'
-        }
-      ],
-      estudiantes: 25,
-      creditos: 3
-    },
-    {
-      id: '4',
-      materia: 'Historia',
-      codigo: 'HIS-101',
-      profesor: 'Dr. Ana Torres',
-      ciclo: '1239',
-      horarios: [
-        {
-          dia: 'Mi',
-          horaInicio: '14:00',
-          horaFin: '16:30',
-          aula: 'AULA-201'
-        },
-        {
-          dia: 'Vi',
-          horaInicio: '14:00',
-          horaFin: '16:30',
-          aula: 'AULA-201'
-        }
-      ],
-      estudiantes: 30,
-      creditos: 3
-    },
-    {
-      id: '5',
-      materia: 'Inglés',
-      codigo: 'ENG-102',
-      profesor: 'Prof. John Smith',
-      ciclo: '1239',
-      horarios: [
-        {
-          dia: 'Lu',
-          horaInicio: '10:00',
-          horaFin: '12:00',
-          aula: 'LANG-101'
-        },
-        {
-          dia: 'Mi',
-          horaInicio: '10:00',
-          horaFin: '12:00',
-          aula: 'LANG-101'
-        }
-      ],
-      estudiantes: 22,
-      creditos: 2
-    }
-  ];
-
+  // Cargar ciclos disponibles al iniciar
   useEffect(() => {
-    const loadClases = async () => {
-      setIsLoading(true);
-      
-      // Simular delay de API
-      await new Promise(resolve => setTimeout(resolve, 800));
-      
-      // Filtrar clases por ciclo seleccionado
-      const clasesDelCiclo = mockClases.filter(clase => 
-        clase.ciclo === cicloSeleccionado
-      );
-      
-      setClases(clasesDelCiclo);
-      setIsLoading(false);
+    const loadCycles = async () => {
+      try {
+        const cycles = await cyclesUserService.getCyclesDropdown();
+        // El backend devuelve array con campo "cycle" no "name"
+        const cyclesArray = Array.isArray(cycles) ? cycles : [];
+        const ciclosFormateados = cyclesArray.map((c: CycleDropdownAPI) => ({
+          id: String(c.id),
+          nombre: c.cycle || c.name || `Ciclo ${c.id}`,
+        }));
+        setCiclosDisponibles(ciclosFormateados);
+
+        // Intentar obtener el ciclo actual
+        const currentCycle = await cyclesUserService.getCurrentCycle();
+        if (currentCycle) {
+          setCicloSeleccionado(String(currentCycle.id));
+        } else if (ciclosFormateados.length > 0) {
+          // Si no hay ciclo actual, usar el primero
+          setCicloSeleccionado(ciclosFormateados[0].id);
+        }
+      } catch (err) {
+        console.error('Error loading cycles:', err);
+        // Si falla, usar un valor por defecto
+        setCicloSeleccionado('');
+      }
     };
 
-    loadClases();
+    loadCycles();
+  }, []);
+
+  // Cargar clases cuando cambia el ciclo
+  const loadClases = useCallback(async () => {
+    if (!cicloSeleccionado) return;
+
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const cycleId = parseInt(cicloSeleccionado, 10);
+      const response = await myClassesService.getMySchedule(cycleId);
+      
+      const clasesTransformadas = response.map(transformCourseInfo);
+      setClases(clasesTransformadas);
+    } catch (err: any) {
+      console.error('Error loading classes:', err);
+      setError(err.message || 'Error al cargar las clases');
+      setClases([]);
+    } finally {
+      setIsLoading(false);
+    }
   }, [cicloSeleccionado]);
+
+  useEffect(() => {
+    loadClases();
+  }, [loadClases]);
+
+  const refetch = useCallback(() => {
+    loadClases();
+  }, [loadClases]);
 
   return {
     clases,
     isLoading,
+    error,
     cicloSeleccionado,
-    setCicloSeleccionado
+    setCicloSeleccionado,
+    ciclosDisponibles,
+    refetch,
   };
-}; 
+};

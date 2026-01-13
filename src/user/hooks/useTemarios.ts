@@ -1,19 +1,103 @@
-import { useState, useEffect } from 'react';
-import { TemarioService } from '../services/TemarioService';
-import { Academia, Materia, TemarioDetalle, EstadoMateria } from '../interfaces/temario.interfaces';
+/**
+ * Hook para gestionar Temarios y Preferencias de Materias
+ * 
+ * Conecta con:
+ * - /v2/academies/dropdown/ - para lista de academias
+ * - /v2/preferences/?academy=xxx - para cursos con preferencias
+ * - /v2/preferences/ POST - para toggle de preferencia
+ * 
+ * Nota: Los temarios detallados (syllabus) no están implementados en el backend,
+ * por lo que se mantienen como mock por ahora.
+ */
+
+import { useState, useEffect, useCallback } from 'react';
+import { preferencesService, academiesUserService, CourseWithPreferenceAPI } from '../services/userApiServices';
+import { Academia, Materia, TemarioDetalle, EstadoMateria, TipoEvaluacion, TipoBibliografia } from '../interfaces/temario.interfaces';
 import { useAuth } from '../../shared/context/AuthContext';
+
+// Colores disponibles para materias
+const COLORS = [
+  'bg-blue-500',
+  'bg-red-500',
+  'bg-purple-500',
+  'bg-green-500',
+  'bg-orange-500',
+  'bg-pink-500',
+  'bg-indigo-500',
+  'bg-teal-500',
+];
+
+/**
+ * Transforma curso del backend al formato de Materia del frontend
+ */
+const transformCourseToMateria = (course: CourseWithPreferenceAPI, index: number): Materia => {
+  return {
+    id: String(course.id),
+    nombre: course.name,
+    descripcion: `Código: ${course.code}`,
+    icono: course.style?.icon || 'book',
+    color: COLORS[index % COLORS.length],
+    academia: course.academy_name || course.academy || '',
+    estado: course.is_selected === 'true' ? EstadoMateria.AÑADIDA : EstadoMateria.DISPONIBLE,
+    codigo: course.code,
+    creditos: undefined,
+  };
+};
+
+// Mock de temarios detallados (hasta que el backend los implemente)
+const MOCK_TEMARIOS: TemarioDetalle[] = [
+  {
+    id: 'temario-mock',
+    materiaId: '',
+    denominacion: '',
+    clave: '',
+    cicloEscolar: 'Bloque disciplinario profesional',
+    bloque: 'Fines de aprendizaje y formación',
+    finesAprendizaje: 'Objetivos de aprendizaje específicos de la materia.',
+    contenidoTematico: [
+      {
+        id: 'contenido-1',
+        numero: 1,
+        titulo: 'INTRODUCCIÓN',
+        subtemas: [
+          { id: 'subtema-1-1', numero: '1.1', titulo: 'Conceptos básicos', descripcion: 'Fundamentos de la materia' },
+          { id: 'subtema-1-2', numero: '1.2', titulo: 'Historia y evolución', descripcion: 'Contexto histórico' },
+        ]
+      },
+      {
+        id: 'contenido-2',
+        numero: 2,
+        titulo: 'DESARROLLO',
+        subtemas: [
+          { id: 'subtema-2-1', numero: '2.1', titulo: 'Tema principal', descripcion: 'Contenido central' },
+          { id: 'subtema-2-2', numero: '2.2', titulo: 'Aplicaciones prácticas', descripcion: 'Casos de uso' },
+        ]
+      }
+    ],
+    objetivos: ['Conocer los fundamentos', 'Aplicar conceptos en casos prácticos'],
+    metodologia: ['Clases teóricas', 'Talleres prácticos', 'Proyectos'],
+    evaluacion: [
+      { id: 'eval-1', tipo: TipoEvaluacion.PROYECTO, descripcion: 'Proyecto final', porcentaje: 40 },
+      { id: 'eval-2', tipo: TipoEvaluacion.EXAMEN, descripcion: 'Exámenes parciales', porcentaje: 40 },
+      { id: 'eval-3', tipo: TipoEvaluacion.PARTICIPACION, descripcion: 'Participación', porcentaje: 20 },
+    ],
+    bibliografia: [
+      { id: 'bib-1', tipo: TipoBibliografia.LIBRO, autor: 'Autor', titulo: 'Libro de referencia', editorial: 'Editorial', año: 2024 },
+    ],
+    profesor: 'Por asignar',
+    fechaActualizacion: new Date().toISOString().split('T')[0],
+  }
+];
 
 export const useTemarios = () => {
   const { user } = useAuth();
   const [academias, setAcademias] = useState<Academia[]>([]);
   const [materias, setMaterias] = useState<Materia[]>([]);
-  const [academiaSeleccionada, setAcademiaSeleccionada] = useState<string>('comping');
+  const [academiaSeleccionada, setAcademiaSeleccionada] = useState<string>('');
   const [temarioSeleccionado, setTemarioSeleccionado] = useState<TemarioDetalle | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingTemario, setIsLoadingTemario] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  const temarioService = new TemarioService();
 
   // Cargar academias al inicializar
   useEffect(() => {
@@ -31,27 +115,49 @@ export const useTemarios = () => {
     try {
       setIsLoading(true);
       setError(null);
-      const academiasData = await temarioService.getAcademias();
-      setAcademias(academiasData);
+      
+      const academiasData = await academiesUserService.getAcademiesDropdown();
+      
+      const academiasFormateadas: Academia[] = academiasData.map(a => ({
+        id: String(a.id),
+        nombre: a.name,
+        descripcion: a.faculty_name || '',
+        materias: [],
+        activa: true,
+      }));
+      
+      setAcademias(academiasFormateadas);
+      
+      // Seleccionar primera academia si hay
+      if (academiasFormateadas.length > 0 && !academiaSeleccionada) {
+        setAcademiaSeleccionada(academiasFormateadas[0].nombre);
+      }
     } catch (err) {
-      setError('Error al cargar academias');
       console.error('Error loading academias:', err);
+      setError('Error al cargar academias');
     } finally {
       setIsLoading(false);
     }
   };
 
-  const loadMaterias = async (academiaId: string) => {
+  const loadMaterias = async (academiaName: string) => {
     try {
-      console.log('📚 Cargando materias para academia:', academiaId);
+      console.log('📚 Cargando materias para academia:', academiaName);
       setIsLoading(true);
       setError(null);
-      const materiasData = await temarioService.getMateriasByAcademia(academiaId);
-      console.log('📋 Materias cargadas:', materiasData);
-      setMaterias(materiasData);
+      
+      const coursesData = await preferencesService.getCoursesByAcademy(academiaName);
+      
+      const materiasFormateadas = coursesData.map((course, index) => 
+        transformCourseToMateria(course, index)
+      );
+      
+      console.log('📋 Materias cargadas:', materiasFormateadas);
+      setMaterias(materiasFormateadas);
     } catch (err) {
-      setError('Error al cargar materias');
       console.error('Error loading materias:', err);
+      setError('Error al cargar materias');
+      setMaterias([]);
     } finally {
       setIsLoading(false);
     }
@@ -60,21 +166,27 @@ export const useTemarios = () => {
   const toggleMateriaEstado = async (materiaId: string) => {
     try {
       console.log('🔄 Toggleando estado de materia:', materiaId);
-      const materiaActualizada = await temarioService.toggleMateriaEstado(materiaId);
-      console.log('✅ Materia actualizada:', materiaActualizada);
       
-      if (materiaActualizada) {
-        setMaterias(prev => {
-          const nuevasMaterias = prev.map(materia => 
-            materia.id === materiaId ? materiaActualizada : materia
-          );
-          console.log('📝 Nuevas materias state:', nuevasMaterias);
-          return nuevasMaterias;
-        });
-      }
+      // Llamar al backend para toggle
+      const result = await preferencesService.togglePreference(parseInt(materiaId, 10));
+      console.log('✅ Resultado toggle:', result);
+      
+      // Actualizar estado local
+      setMaterias(prev => prev.map(materia => {
+        if (materia.id === materiaId) {
+          return {
+            ...materia,
+            estado: result.is_selected ? EstadoMateria.AÑADIDA : EstadoMateria.DISPONIBLE,
+          };
+        }
+        return materia;
+      }));
+      
+      return materias.find(m => m.id === materiaId);
     } catch (err) {
       console.error('❌ Error al actualizar estado de materia:', err);
       setError('Error al actualizar estado de materia');
+      throw err;
     }
   };
 
@@ -83,15 +195,27 @@ export const useTemarios = () => {
       console.log('📖 Cargando temario para materia:', materiaId);
       setIsLoadingTemario(true);
       setError(null);
-      const temario = await temarioService.getTemarioByMateria(materiaId);
-      console.log('�� Temario cargado:', temario);
       
-      if (temario) {
-        setTemarioSeleccionado(temario);
-        console.log('✅ Temario seleccionado actualizado');
+      // TODO: Cuando el backend implemente temarios, usar el servicio real
+      // Por ahora, generar un temario mock basado en la materia
+      const materia = materias.find(m => m.id === materiaId);
+      
+      if (materia) {
+        const temarioGenerado: TemarioDetalle = {
+          ...MOCK_TEMARIOS[0],
+          id: `temario-${materiaId}`,
+          materiaId: materiaId,
+          denominacion: materia.nombre,
+          clave: materia.codigo || 'SIN-CODIGO',
+        };
+        
+        // Simular delay de red
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        setTemarioSeleccionado(temarioGenerado);
+        console.log('✅ Temario generado:', temarioGenerado);
       } else {
-        console.log('⚠️ No se encontró temario para esta materia');
-        setError('No se encontró temario disponible para esta materia');
+        setError('Materia no encontrada');
       }
     } catch (err) {
       console.error('❌ Error al cargar temario:', err);
@@ -110,24 +234,30 @@ export const useTemarios = () => {
     try {
       const materiasSeleccionadas = materias
         .filter(materia => materia.estado === EstadoMateria.AÑADIDA)
-        .map(materia => materia.id);
+        .map(materia => ({
+          id: parseInt(materia.id, 10),
+          is_selected: 'true' as const,
+        }));
 
-      await temarioService.guardarPreferencias(
-        user.id, 
-        academiaSeleccionada, 
-        materiasSeleccionadas
-      );
+      const materiasNoSeleccionadas = materias
+        .filter(materia => materia.estado === EstadoMateria.DISPONIBLE)
+        .map(materia => ({
+          id: parseInt(materia.id, 10),
+          is_selected: 'false' as const,
+        }));
+
+      await preferencesService.savePreferences({
+        [academiaSeleccionada]: [...materiasSeleccionadas, ...materiasNoSeleccionadas],
+      });
       
-      // Mostrar mensaje de éxito o navegar
-      console.log('Preferencias guardadas exitosamente');
+      console.log('✅ Preferencias guardadas exitosamente');
     } catch (err) {
-      setError('Error al guardar preferencias');
       console.error('Error saving preferences:', err);
+      setError('Error al guardar preferencias');
     }
   };
 
   const clearError = () => setError(null);
-
   const clearTemarioSeleccionado = () => setTemarioSeleccionado(null);
 
   return {
@@ -153,4 +283,4 @@ export const useTemarios = () => {
     materiasDisponibles: materias.filter(m => m.estado === EstadoMateria.DISPONIBLE),
     totalMaterias: materias.length
   };
-}; 
+};

@@ -1,17 +1,22 @@
 import React from 'react';
 import { FaChevronDown } from 'react-icons/fa';
 
+interface CicloOption {
+  id: string;
+  nombre: string;
+}
+
 interface HeaderMisClasesProps {
   cicloSeleccionado: string;
   onCicloChange: (ciclo: string) => void;
+  ciclosDisponibles?: CicloOption[];
 }
 
 export const HeaderMisClases: React.FC<HeaderMisClasesProps> = ({
   cicloSeleccionado,
-  onCicloChange
+  onCicloChange,
+  ciclosDisponibles = []
 }) => {
-  const ciclosDisponibles = ['1238', '1239', '1240', '1241'];
-
   return (
     <div className="flex items-center justify-between">
       <div>
@@ -27,11 +32,14 @@ export const HeaderMisClases: React.FC<HeaderMisClasesProps> = ({
           <select
             value={cicloSeleccionado}
             onChange={(e) => onCicloChange(e.target.value)}
-            className="appearance-none bg-white border border-gray-300 rounded-lg px-4 py-2 pr-8 text-gray-900 focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-brand-primary min-w-[120px]"
+            className="appearance-none bg-white border border-gray-300 rounded-lg px-4 py-2 pr-8 text-gray-900 focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-brand-primary min-w-[150px]"
           >
+            {ciclosDisponibles.length === 0 && (
+              <option value="">Cargando ciclos...</option>
+            )}
             {ciclosDisponibles.map((ciclo) => (
-              <option key={ciclo} value={ciclo}>
-                {ciclo}
+              <option key={ciclo.id} value={ciclo.id}>
+                {ciclo.nombre}
               </option>
             ))}
           </select>
@@ -40,4 +48,4 @@ export const HeaderMisClases: React.FC<HeaderMisClasesProps> = ({
       </div>
     </div>
   );
-}; 
+};

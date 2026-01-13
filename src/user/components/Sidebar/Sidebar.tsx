@@ -127,25 +127,25 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle }) => {
         ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
       `}>
         {/* Header del sidebar */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-gradient-to-r from-brand-primary to-brand-secondary flex-shrink-0">
+        <div className="flex items-center justify-between p-6 border-b border-gray-100 bg-white flex-shrink-0">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
+            <div className="w-10 h-10 bg-brand-primary rounded-full flex items-center justify-center">
               <span className="text-white text-lg font-bold">
                 {user?.firstName?.charAt(0) || 'U'}{user?.lastName?.charAt(0) || 'S'}
               </span>
             </div>
-            <div className="text-white">
-              <p className="text-sm font-medium truncate">
+            <div>
+              <p className="text-sm font-medium text-gray-900 truncate">
                 {user?.firstName || 'Usuario'} {user?.lastName || 'Sistema'}
               </p>
-              <p className="text-xs text-white/80">Docente</p>
+              <p className="text-xs text-gray-500">Docente</p>
             </div>
           </div>
           
           {/* Botón cerrar en móvil */}
           <button
             onClick={onToggle}
-            className="lg:hidden text-white hover:text-white/80 transition-colors"
+            className="lg:hidden text-gray-500 hover:text-gray-700 transition-colors"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
