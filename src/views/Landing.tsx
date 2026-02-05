@@ -17,13 +17,13 @@ export const Landing: React.FC = () => {
             <div className="flex space-x-4">
               <Link 
                 to={ROUTES.LOGIN_ADMIN} 
-                className="text-secondary-700 hover:text-brand-primary px-3 py-2 rounded-md text-sm font-medium transition-colors"
+                className="text-gray-700 hover:text-brand-primary px-3 py-2 rounded-md text-sm font-medium transition-colors"
               >
                 Login Admin
               </Link>
               <Link 
                 to={ROUTES.LOGIN_USER} 
-                className="bg-brand-primary text-white hover:bg-primary-800 px-4 py-2 rounded-md text-sm font-medium transition-colors"
+                className="bg-brand-primary text-white hover:bg-wine-800 px-4 py-2 rounded-md text-sm font-medium transition-colors"
               >
                 Login Usuario
               </Link>
@@ -87,7 +87,7 @@ export const Landing: React.FC = () => {
               <h3 className="text-3xl md:text-4xl font-bold text-brand-primary mb-4">
                 Características Principales
               </h3>
-              <p className="text-xl text-secondary-600 max-w-2xl mx-auto">
+              <p className="text-xl text-gray-600 max-w-2xl mx-auto">
                 Herramientas poderosas para una gestión educativa eficiente
               </p>
             </div>
@@ -95,7 +95,7 @@ export const Landing: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               <div className="group bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2">
                 <div className="p-8 text-center">
-                  <div className="w-16 h-16 bg-gradient-to-r from-brand-primary to-primary-700 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
+                  <div className="w-16 h-16 bg-gradient-to-r from-brand-primary to-wine-700 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
                     <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                     </svg>
@@ -103,7 +103,7 @@ export const Landing: React.FC = () => {
                   <h4 className="text-xl font-semibold text-brand-primary mb-4">
                     Gestión de Instituciones
                   </h4>
-                  <p className="text-secondary-600 leading-relaxed">
+                  <p className="text-gray-600 leading-relaxed">
                     Administra múltiples instituciones desde un panel centralizado con herramientas avanzadas de control.
                   </p>
                 </div>
@@ -111,7 +111,7 @@ export const Landing: React.FC = () => {
 
               <div className="group bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2">
                 <div className="p-8 text-center">
-                  <div className="w-16 h-16 bg-gradient-to-r from-brand-secondary to-secondary-700 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
+                  <div className="w-16 h-16 bg-gradient-to-r from-brand-secondary to-gold-700 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
                     <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                     </svg>
@@ -119,7 +119,7 @@ export const Landing: React.FC = () => {
                   <h4 className="text-xl font-semibold text-brand-primary mb-4">
                     Perfiles de Docentes
                   </h4>
-                  <p className="text-secondary-600 leading-relaxed">
+                  <p className="text-gray-600 leading-relaxed">
                     CVs completos con experiencia, educación y logros académicos en un formato profesional.
                   </p>
                 </div>
@@ -127,7 +127,7 @@ export const Landing: React.FC = () => {
 
               <div className="group bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2">
                 <div className="p-8 text-center">
-                  <div className="w-16 h-16 bg-gradient-to-r from-accent-600 to-accent-700 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
+                  <div className="w-16 h-16 bg-gradient-to-r from-navy-600 to-navy-700 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
                     <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                     </svg>
@@ -135,7 +135,7 @@ export const Landing: React.FC = () => {
                   <h4 className="text-xl font-semibold text-brand-primary mb-4">
                     Gestión de Clases
                   </h4>
-                  <p className="text-secondary-600 leading-relaxed">
+                  <p className="text-gray-600 leading-relaxed">
                     Organiza y administra clases, horarios y materiales educativos de manera intuitiva.
                   </p>
                 </div>
@@ -150,13 +150,13 @@ export const Landing: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div>
               <h3 className="text-xl font-bold mb-4">{CONFIG.APP_NAME}</h3>
-              <p className="text-primary-200">
+              <p className="text-wine-200">
                 Conectando el futuro de la educación con tecnología innovadora.
               </p>
             </div>
             <div>
               <h4 className="font-semibold mb-4">Enlaces Rápidos</h4>
-              <ul className="space-y-2 text-primary-200">
+              <ul className="space-y-2 text-wine-200">
                 <li><Link to={ROUTES.LOGIN_ADMIN} className="hover:text-white transition-colors">Portal Admin</Link></li>
                 <li><Link to={ROUTES.LOGIN_USER} className="hover:text-white transition-colors">Portal Docente</Link></li>
                 <li><Link to={ROUTES.REGISTER_ADMIN} className="hover:text-white transition-colors">Registro</Link></li>
@@ -164,7 +164,7 @@ export const Landing: React.FC = () => {
             </div>
             <div>
               <h4 className="font-semibold mb-4">Contacto</h4>
-              <p className="text-primary-200">
+              <p className="text-wine-200">
                 © 2024 {CONFIG.APP_NAME}. <br />
                 Todos los derechos reservados.
               </p>
