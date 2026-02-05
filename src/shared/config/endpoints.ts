@@ -30,6 +30,7 @@ export const API_ENDPOINTS = {
     // USUARIOS
     // -----------------------------------------------------------------------
     USERS: '/v2/users/',
+    USERS_ME: '/v2/users/me/',
     USER_BY_ID: (id: number | string) => `/v2/users/${id}/`,
     USER_ROLES: (id: number | string) => `/v2/users/${id}/assign-role/`,
     USER_PERMISSIONS: '/v2/users/me/permissions/',
@@ -72,7 +73,7 @@ export const API_ENDPOINTS = {
     CYCLES: '/v2/cycles/',
     CYCLE_BY_ID: (id: number | string) => `/v2/cycles/${id}/`,
     CYCLES_DROPDOWN: '/v2/cycles/dropdown/',
-    CYCLE_CURRENT: '/v2/cycles/current/',
+    CYCLES_CURRENT: '/v2/cycles/current/',
 
     // -----------------------------------------------------------------------
     // CURSOS (Materias)
@@ -86,13 +87,13 @@ export const API_ENDPOINTS = {
     // -----------------------------------------------------------------------
     COURSE_INFO: '/v2/course-info/',
     COURSE_INFO_BY_ID: (id: number | string) => `/v2/course-info/${id}/`,
-    COURSE_INFO_MY_SCHEDULE: '/v2/course-info/my-schedule/',
+    COURSE_INFO_MY_SCHEDULE: '/v2/course-info/my_schedule/',  // underscore, no guión
 
     // -----------------------------------------------------------------------
     // PREFERENCIAS
     // -----------------------------------------------------------------------
     PREFERENCES: '/v2/preferences/',
-    PREFERENCES_MY: '/v2/preferences/my-preferences/',
+    PREFERENCES_MY: '/v2/preferences/my_preferences/',  // underscore, no guión
 
     // -----------------------------------------------------------------------
     // ESTILOS
@@ -104,11 +105,15 @@ export const API_ENDPOINTS = {
     // -----------------------------------------------------------------------
     AVAILABILITY: '/v2/availability/',
     AVAILABILITY_BY_ID: (id: number | string) => `/v2/availability/${id}/`,
+    AVAILABILITY_MY: '/v2/availability/my_availability/',
+    AVAILABILITY_BY_CYCLE: (cycleId: number | string) => `/v2/availability/by-cycle/${cycleId}/`,
 
     // -----------------------------------------------------------------------
     // NOTIFICACIONES
     // -----------------------------------------------------------------------
     NOTIFICATIONS: '/v2/notifications/',
+    NOTIFICATION_BY_ID: (id: number | string) => `/v2/notifications/${id}/`,
+    NOTIFICATIONS_COUNT: '/v2/notifications/count/',
 
     // -----------------------------------------------------------------------
     // CV

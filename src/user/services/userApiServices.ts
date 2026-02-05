@@ -2,6 +2,7 @@
  * Servicios API para módulo de Usuario (Docente)
  * 
  * Conecta con el backend real usando el HttpClient unificado.
+ * NOTA: httpClient.get/post/etc ya devuelven response.data directamente
  */
 
 import { httpClient } from '../../shared/services/http/HttpClient';
@@ -146,11 +147,11 @@ export const myClassesService = {
    */
   getMySchedule: async (cycleId?: number): Promise<CourseInfoAPI[]> => {
     const params = cycleId ? { cycle: cycleId } : {};
-    const response = await httpClient.get<CourseInfoAPI[]>(
+    const data = await httpClient.get<CourseInfoAPI[]>(
       API_ENDPOINTS.V2.COURSE_INFO_MY_SCHEDULE,
       { params }
     );
-    return response.data;
+    return Array.isArray(data) ? data : [];
   },
 };
 
@@ -163,53 +164,42 @@ export const preferencesService = {
    * Obtiene cursos de una academia con marca de si están seleccionados
    */
   getCoursesByAcademy: async (academyName: string): Promise<CourseWithPreferenceAPI[]> => {
-    const response = await httpClient.get<CourseWithPreferenceAPI[]>(
+    const data = await httpClient.get<CourseWithPreferenceAPI[]>(
       API_ENDPOINTS.V2.PREFERENCES,
       { params: { academy: academyName } }
     );
-    return response.data;
+    return Array.isArray(data) ? data : [];
   },
 
   /**
    * Obtiene todos los cursos de las academias del usuario con preferencias
    */
   getMyCoursesWithPreferences: async (): Promise<CourseWithPreferenceAPI[]> => {
-    const response = await httpClient.get<CourseWithPreferenceAPI[]>(
+    const data = await httpClient.get<CourseWithPreferenceAPI[]>(
       API_ENDPOINTS.V2.PREFERENCES
     );
-    return response.data;
+    return Array.isArray(data) ? data : [];
   },
 
   /**
    * Obtiene mis preferencias guardadas
    */
   getMyPreferences: async (): Promise<any[]> => {
-    const response = await httpClient.get<any[]>(
+    const data = await httpClient.get<any[]>(
       API_ENDPOINTS.V2.PREFERENCES_MY
     );
-    return response.data;
+    return Array.isArray(data) ? data : [];
   },
 
   /**
    * Toggle preferencia individual
    */
   togglePreference: async (courseId: number): Promise<{ course_id: number; is_selected: boolean }> => {
-    const response = await httpClient.post<{ course_id: number; is_selected: boolean }>(
+    const data = await httpClient.post<{ course_id: number; is_selected: boolean }>(
       API_ENDPOINTS.V2.PREFERENCES,
       { course_id: courseId }
     );
-    return response.data;
-  },
-
-  /**
-   * Guardar preferencias en bulk (formato legacy)
-   */
-  savePreferences: async (preferences: Record<string, { id: number; is_selected: string }[]>): Promise<{ updated: number }> => {
-    const response = await httpClient.patch<{ updated: number }>(
-      API_ENDPOINTS.V2.PREFERENCES,
-      preferences
-    );
-    return response.data;
+    return data;
   },
 };
 
@@ -223,8 +213,8 @@ export const cvApiService = {
    */
   getMyCV: async (): Promise<CVAPI | null> => {
     try {
-      const response = await httpClient.get<CVAPI>(API_ENDPOINTS.V2.CV_ME);
-      return response as unknown as CVAPI;
+      const data = await httpClient.get<CVAPI>(API_ENDPOINTS.V2.CV_ME);
+      return data;
     } catch (error: any) {
       // El HttpClient transforma errores, verificar mensaje
       if (error.message?.includes('404') || error.response?.status === 404) {
@@ -239,10 +229,10 @@ export const cvApiService = {
    */
   getCVByUserId: async (userId: number): Promise<CVAPI | null> => {
     try {
-      const response = await httpClient.get<CVAPI>(API_ENDPOINTS.V2.CV_BY_ID(userId));
-      return response.data;
+      const data = await httpClient.get<CVAPI>(API_ENDPOINTS.V2.CV_BY_ID(userId));
+      return data;
     } catch (error: any) {
-      if (error.response?.status === 404) {
+      if (error.message?.includes('404') || error.response?.status === 404) {
         return null;
       }
       throw error;
@@ -253,16 +243,16 @@ export const cvApiService = {
    * Crea un nuevo CV
    */
   createCV: async (data: CVInputAPI): Promise<CVAPI> => {
-    const response = await httpClient.post<CVAPI>(API_ENDPOINTS.V2.CV, data);
-    return response.data;
+    const result = await httpClient.post<CVAPI>(API_ENDPOINTS.V2.CV, data);
+    return result;
   },
 
   /**
    * Actualiza un CV existente
    */
   updateCV: async (cvId: number, data: Partial<CVInputAPI>): Promise<CVAPI> => {
-    const response = await httpClient.put<CVAPI>(API_ENDPOINTS.V2.CV_BY_ID(cvId), data);
-    return response.data;
+    const result = await httpClient.put<CVAPI>(API_ENDPOINTS.V2.CV_BY_ID(cvId), data);
+    return result;
   },
 };
 
@@ -275,10 +265,10 @@ export const academiesUserService = {
    * Obtiene lista de academias para dropdown
    */
   getAcademiesDropdown: async (): Promise<AcademyDropdownAPI[]> => {
-    const response = await httpClient.get<AcademyDropdownAPI[]>(
+    const data = await httpClient.get<AcademyDropdownAPI[]>(
       API_ENDPOINTS.V2.ACADEMIES_DROPDOWN
     );
-    return response.data;
+    return Array.isArray(data) ? data : [];
   },
 };
 
@@ -298,23 +288,9 @@ export const cyclesUserService = {
    * Obtiene lista de ciclos disponibles
    */
   getCyclesDropdown: async (): Promise<CycleDropdownAPI[]> => {
-    const response = await httpClient.get<CycleDropdownAPI[]>(
+    const data = await httpClient.get<CycleDropdownAPI[]>(
       API_ENDPOINTS.V2.CYCLES_DROPDOWN
     );
-    return response.data;
-  },
-
-  /**
-   * Obtiene el ciclo actual
-   */
-  getCurrentCycle: async (): Promise<CycleDropdownAPI | null> => {
-    try {
-      const response = await httpClient.get<CycleDropdownAPI>(
-        API_ENDPOINTS.V2.CYCLE_CURRENT
-      );
-      return response.data;
-    } catch {
-      return null;
-    }
+    return Array.isArray(data) ? data : [];
   },
 };

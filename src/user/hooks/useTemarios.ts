@@ -98,6 +98,7 @@ export const useTemarios = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingTemario, setIsLoadingTemario] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   // Cargar academias al inicializar
   useEffect(() => {
@@ -231,33 +232,20 @@ export const useTemarios = () => {
       return;
     }
 
-    try {
-      const materiasSeleccionadas = materias
-        .filter(materia => materia.estado === EstadoMateria.AÑADIDA)
-        .map(materia => ({
-          id: parseInt(materia.id, 10),
-          is_selected: 'true' as const,
-        }));
-
-      const materiasNoSeleccionadas = materias
-        .filter(materia => materia.estado === EstadoMateria.DISPONIBLE)
-        .map(materia => ({
-          id: parseInt(materia.id, 10),
-          is_selected: 'false' as const,
-        }));
-
-      await preferencesService.savePreferences({
-        [academiaSeleccionada]: [...materiasSeleccionadas, ...materiasNoSeleccionadas],
-      });
-      
-      console.log('✅ Preferencias guardadas exitosamente');
-    } catch (err) {
-      console.error('Error saving preferences:', err);
-      setError('Error al guardar preferencias');
-    }
+    // Las preferencias ya se guardan automáticamente con cada toggle
+    const materiasSeleccionadas = materias.filter(m => m.estado === EstadoMateria.AÑADIDA);
+    
+    // Mostrar mensaje de éxito
+    setSuccessMessage(`Preferencias guardadas. ${materiasSeleccionadas.length} materia(s) seleccionada(s)`);
+    
+    // Ocultar mensaje después de 3 segundos
+    setTimeout(() => {
+      setSuccessMessage(null);
+    }, 3000);
   };
 
   const clearError = () => setError(null);
+  const clearSuccessMessage = () => setSuccessMessage(null);
   const clearTemarioSeleccionado = () => setTemarioSeleccionado(null);
 
   return {
@@ -269,6 +257,7 @@ export const useTemarios = () => {
     isLoading,
     isLoadingTemario,
     error,
+    successMessage,
 
     // Acciones
     setAcademiaSeleccionada,
@@ -276,6 +265,7 @@ export const useTemarios = () => {
     loadTemario,
     guardarPreferencias,
     clearError,
+    clearSuccessMessage,
     clearTemarioSeleccionado,
     
     // Utilidades

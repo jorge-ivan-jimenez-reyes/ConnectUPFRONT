@@ -6,4 +6,5 @@ export { useHorarios } from './useHorarios';
 export { useDisponibilidad } from './useDisponibilidad';
 export { useCV } from './useCV';
 export { usePerfil } from './usePerfil';
-export { useMensajes } from './useMensajes'; 
+export { useMensajes } from './useMensajes';
+export { useNotificaciones } from './useNotificaciones'; 

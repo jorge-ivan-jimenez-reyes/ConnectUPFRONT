@@ -1,7 +1,7 @@
 import React from 'react';
 import { HeaderPreferencias } from './HeaderPreferencias';
 import { TarjetaMateria } from './TarjetaMateria';
-import { FaSpinner } from 'react-icons/fa';
+import { FaSpinner, FaCheckCircle } from 'react-icons/fa';
 import { Academia, Materia } from '../../interfaces/temario.interfaces';
 
 interface PreferenciaClasesProps {
@@ -11,6 +11,7 @@ interface PreferenciaClasesProps {
   academiaSeleccionada: string;
   isLoading: boolean;
   error: string | null;
+  successMessage?: string | null;
   materiasAñadidas: Materia[];
   
   // Acciones
@@ -27,6 +28,7 @@ export const PreferenciaClases: React.FC<PreferenciaClasesProps> = ({
   academiaSeleccionada,
   isLoading,
   error,
+  successMessage,
   materiasAñadidas,
   
   // Acciones
@@ -52,7 +54,17 @@ export const PreferenciaClases: React.FC<PreferenciaClasesProps> = ({
   }
 
   return (
-    <div className="max-w-6xl mx-auto">
+    <div className="max-w-6xl mx-auto relative">
+      {/* Toast Notification */}
+      {successMessage && (
+        <div className="fixed top-4 right-4 z-50 animate-slide-in">
+          <div className="bg-green-500 text-white px-6 py-4 rounded-lg shadow-lg flex items-center gap-3">
+            <FaCheckCircle className="w-5 h-5" />
+            <span className="font-medium">{successMessage}</span>
+          </div>
+        </div>
+      )}
+
       {/* Contenedor principal con borde azul */}
       <div className="border-2 border-blue-400 rounded-2xl p-8 bg-white">
         {/* Header */}
@@ -94,4 +106,4 @@ export const PreferenciaClases: React.FC<PreferenciaClasesProps> = ({
       </div>
     </div>
   );
-}; 
+};

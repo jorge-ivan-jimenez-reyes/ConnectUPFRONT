@@ -15,6 +15,7 @@ export const Temarios: React.FC = () => {
     isLoading,
     isLoadingTemario,
     error,
+    successMessage,
     
     // Acciones
     setAcademiaSeleccionada,
@@ -27,12 +28,8 @@ export const Temarios: React.FC = () => {
     materiasAñadidas
   } = useTemarios();
 
-  console.log('🔍 Estado en Temarios - temarioSeleccionado:', temarioSeleccionado);
-  console.log('🔍 Estado en Temarios - isLoadingTemario:', isLoadingTemario);
-
   // Si hay un temario seleccionado, mostrar la vista de detalle
   if (temarioSeleccionado) {
-    console.log('📖 Mostrando detalle del temario');
     return (
       <DetalleTemario 
         temario={temarioSeleccionado}
@@ -43,7 +40,6 @@ export const Temarios: React.FC = () => {
   }
 
   // Por defecto mostrar la vista de preferencia de clases
-  console.log('📋 Mostrando preferencia de clases');
   return (
     <PreferenciaClases 
       // Estado
@@ -52,6 +48,7 @@ export const Temarios: React.FC = () => {
       academiaSeleccionada={academiaSeleccionada}
       isLoading={isLoading}
       error={error}
+      successMessage={successMessage}
       materiasAñadidas={materiasAñadidas}
       
       // Acciones
@@ -61,4 +58,4 @@ export const Temarios: React.FC = () => {
       onGuardarPreferencias={guardarPreferencias}
     />
   );
-}; 
+};

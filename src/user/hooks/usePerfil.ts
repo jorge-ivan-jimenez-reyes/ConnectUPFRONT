@@ -1,23 +1,67 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { PerfilUsuario, ActualizacionPerfil, ConfiguracionPerfil } from '../interfaces/perfil.interfaces';
+import { userService, UserDetailAPI, UpdateUserInput } from '../../shared/services/api';
+
+// ============================================================================
+// MAPEO ENTRE BACKEND Y FRONTEND
+// ============================================================================
+
+/** Convierte UserDetailAPI del backend a PerfilUsuario del frontend */
+function apiToPerfilUsuario(api: UserDetailAPI): PerfilUsuario {
+  return {
+    id: String(api.id),
+    nombreUsuario: api.full_name || `${api.first_name} ${api.last_name}`,
+    fechaNacimiento: '', // El backend no tiene este campo directamente
+    descripcion: '', // El backend no tiene este campo
+    avatar: api.profile_picture || undefined,
+    informacionGestionAcademica: {
+      correoInstitucional: api.institution_email || '',
+      correoPersonal: api.email,
+      celular: api.phone || '',
+      telefono: '',
+      region: '', // El backend no tiene este campo
+    },
+    fechaCreacion: api.created_at,
+    fechaActualizacion: api.updated_at,
+  };
+}
+
+/** Convierte datos del frontend a UpdateUserInput para el backend */
+function perfilToUpdateInput(perfil: PerfilUsuario): UpdateUserInput {
+  const [firstName, ...lastNameParts] = perfil.nombreUsuario.split(' ');
+  const lastName = lastNameParts.join(' ') || '';
+  
+  return {
+    first_name: firstName,
+    last_name: lastName,
+    email: perfil.informacionGestionAcademica.correoPersonal,
+    institution_email: perfil.informacionGestionAcademica.correoInstitucional || undefined,
+    phone: perfil.informacionGestionAcademica.celular || undefined,
+    profile_picture: perfil.avatar || undefined,
+  };
+}
+
+// ============================================================================
+// HOOK
+// ============================================================================
 
 export const usePerfil = () => {
-  // Estado del perfil (datos de ejemplo)
+  // Estado del perfil
   const [perfil, setPerfil] = useState<PerfilUsuario>({
-    id: '1',
-    nombreUsuario: 'Miranda Smith',
-    fechaNacimiento: '1995-08-15',
-    descripcion: 'Profesora de Matemáticas con experiencia en educación superior. Apasionada por la enseñanza y el desarrollo de nuevas metodologías educativas.',
-    avatar: '/src/assets/img/miranda.png',
+    id: '',
+    nombreUsuario: '',
+    fechaNacimiento: '',
+    descripcion: '',
+    avatar: undefined,
     informacionGestionAcademica: {
-      correoInstitucional: 'ejemplo@up.edu.mx',
-      correoPersonal: 'ejemplo@gmail.com',
-      celular: '(+210) 55 1234 5678',
-      telefono: '(+210) 55 8765 4321',
-      region: 'Región Norte'
+      correoInstitucional: '',
+      correoPersonal: '',
+      celular: '',
+      telefono: '',
+      region: ''
     },
-    fechaCreacion: '2024-01-15',
-    fechaActualizacion: '2024-01-20'
+    fechaCreacion: '',
+    fechaActualizacion: ''
   });
 
   // Configuración del componente
@@ -26,6 +70,34 @@ export const usePerfil = () => {
     guardandoCambios: false,
     errores: {}
   });
+
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // =========================================================================
+  // CARGAR PERFIL DEL BACKEND
+  // =========================================================================
+  const cargarPerfil = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const userDetail = await userService.getMe();
+      const perfilData = apiToPerfilUsuario(userDetail);
+      setPerfil(perfilData);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Error al cargar perfil';
+      setError(message);
+      console.error('Error cargando perfil:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  // Cargar al montar
+  useEffect(() => {
+    cargarPerfil();
+  }, [cargarPerfil]);
 
   // Habilitar/deshabilitar modo edición
   const toggleModoEdicion = useCallback(() => {
@@ -83,28 +155,15 @@ export const usePerfil = () => {
       errores.nombreUsuario = 'El nombre de usuario es requerido';
     }
 
-    if (!perfil.fechaNacimiento) {
-      errores.fechaNacimiento = 'La fecha de nacimiento es requerida';
-    }
-
-    if (!perfil.informacionGestionAcademica.correoInstitucional.trim()) {
-      errores.correoInstitucional = 'El correo institucional es requerido';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(perfil.informacionGestionAcademica.correoInstitucional)) {
-      errores.correoInstitucional = 'El correo institucional no es válido';
-    }
-
     if (!perfil.informacionGestionAcademica.correoPersonal.trim()) {
       errores.correoPersonal = 'El correo personal es requerido';
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(perfil.informacionGestionAcademica.correoPersonal)) {
       errores.correoPersonal = 'El correo personal no es válido';
     }
 
-    if (!perfil.informacionGestionAcademica.celular.trim()) {
-      errores.celular = 'El celular es requerido';
-    }
-
-    if (!perfil.informacionGestionAcademica.region.trim()) {
-      errores.region = 'La región es requerida';
+    if (perfil.informacionGestionAcademica.correoInstitucional && 
+        !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(perfil.informacionGestionAcademica.correoInstitucional)) {
+      errores.correoInstitucional = 'El correo institucional no es válido';
     }
 
     setConfiguracion(prev => ({
@@ -115,8 +174,8 @@ export const usePerfil = () => {
     return Object.keys(errores).length === 0;
   }, [perfil]);
 
-  // Guardar cambios
-  const guardarCambios = useCallback(async () => {
+  // Guardar cambios en el backend
+  const guardarCambios = useCallback(async (): Promise<boolean> => {
     if (!validarPerfil()) {
       return false;
     }
@@ -127,9 +186,12 @@ export const usePerfil = () => {
     }));
 
     try {
-      // Aquí iría la llamada al API para guardar
-      console.log('Guardando perfil:', perfil);
-      await new Promise(resolve => setTimeout(resolve, 1500)); // Simular delay
+      const updateData = perfilToUpdateInput(perfil);
+      const updatedUser = await userService.updateMe(updateData);
+      
+      // Actualizar perfil local con la respuesta
+      const perfilActualizado = apiToPerfilUsuario(updatedUser);
+      setPerfil(perfilActualizado);
 
       setConfiguracion(prev => ({
         ...prev,
@@ -139,12 +201,13 @@ export const usePerfil = () => {
       }));
 
       return true;
-    } catch (error) {
-      console.error('Error al guardar perfil:', error);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Error al guardar cambios';
+      console.error('Error al guardar perfil:', err);
       setConfiguracion(prev => ({
         ...prev,
         guardandoCambios: false,
-        errores: { general: 'Error al guardar los cambios. Inténtalo de nuevo.' }
+        errores: { general: message }
       }));
       return false;
     }
@@ -152,17 +215,19 @@ export const usePerfil = () => {
 
   // Cancelar edición
   const cancelarEdicion = useCallback(() => {
-    // Aquí podrías revertir los cambios si fuera necesario
+    // Recargar perfil del servidor para descartar cambios
+    cargarPerfil();
     setConfiguracion(prev => ({
       ...prev,
       modoEdicion: false,
       errores: {}
     }));
-  }, []);
+  }, [cargarPerfil]);
 
   // Actualizar avatar
   const actualizarAvatar = useCallback((archivo: File) => {
-    // Aquí iría la lógica para subir el archivo
+    // TODO: Implementar subida de archivo al servidor
+    // Por ahora solo actualizamos localmente
     const url = URL.createObjectURL(archivo);
     actualizarCampo('avatar', url);
   }, [actualizarCampo]);
@@ -171,8 +236,11 @@ export const usePerfil = () => {
     // Estado
     perfil,
     configuracion,
+    isLoading,
+    error,
 
     // Acciones
+    cargarPerfil,
     toggleModoEdicion,
     actualizarCampo,
     actualizarGestionAcademica,
@@ -181,4 +249,4 @@ export const usePerfil = () => {
     actualizarAvatar,
     validarPerfil
   };
-}; 
+};

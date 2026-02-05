@@ -1,10 +1,79 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { 
   BloqueDisponibilidad, 
   DiaSemana, 
   ConfiguracionCalendario,
   EstadisticasDisponibilidad 
 } from '../interfaces/disponibilidad.interfaces';
+import { availabilityService, AvailabilitySlotAPI, SlotInput } from '../../shared/services/api';
+
+// ============================================================================
+// MAPEO ENTRE FRONTEND Y BACKEND
+// ============================================================================
+
+/** Mapeo de número de día (backend) a DiaSemana (frontend) */
+const DAY_NUMBER_TO_DIA: Record<number, DiaSemana> = {
+  1: DiaSemana.LUNES,
+  2: DiaSemana.MARTES,
+  3: DiaSemana.MIERCOLES,
+  4: DiaSemana.JUEVES,
+  5: DiaSemana.VIERNES,
+  6: DiaSemana.SABADO,
+};
+
+/** Mapeo inverso: DiaSemana a número */
+const DIA_TO_DAY_NUMBER: Record<DiaSemana, number> = {
+  [DiaSemana.LUNES]: 1,
+  [DiaSemana.MARTES]: 2,
+  [DiaSemana.MIERCOLES]: 3,
+  [DiaSemana.JUEVES]: 4,
+  [DiaSemana.VIERNES]: 5,
+  [DiaSemana.SABADO]: 6,
+  [DiaSemana.DOMINGO]: 7, // No usado normalmente
+};
+
+/** Convierte slots del backend a bloques del frontend */
+function slotsToBlocks(slots: AvailabilitySlotAPI[]): BloqueDisponibilidad[] {
+  return slots.map(slot => {
+    const hora = slot.time_slot.substring(0, 5); // "07:00:00" -> "07:00"
+    const horaNum = parseInt(hora.split(':')[0]);
+    
+    return {
+      id: `${slot.day_of_week}-${hora}-${slot.id}`,
+      dia: DAY_NUMBER_TO_DIA[slot.day_of_week] || DiaSemana.LUNES,
+      horaInicio: hora,
+      horaFin: `${(horaNum + 1).toString().padStart(2, '0')}:00`,
+      disponible: true,
+    };
+  });
+}
+
+/** Convierte bloques del frontend a slots para el backend */
+function blocksToSlots(blocks: BloqueDisponibilidad[]): SlotInput[] {
+  const slots: SlotInput[] = [];
+  
+  blocks.forEach(block => {
+    if (!block.disponible) return;
+    
+    const dayNumber = DIA_TO_DAY_NUMBER[block.dia];
+    const startHour = parseInt(block.horaInicio.split(':')[0]);
+    const endHour = parseInt(block.horaFin.split(':')[0]);
+    
+    // Crear un slot por cada hora en el rango
+    for (let hour = startHour; hour < endHour; hour++) {
+      slots.push({
+        day_of_week: dayNumber,
+        time_slot: `${hour.toString().padStart(2, '0')}:00`,
+      });
+    }
+  });
+  
+  return slots;
+}
+
+// ============================================================================
+// HOOK
+// ============================================================================
 
 export const useDisponibilidad = () => {
   // Configuración del calendario
@@ -22,21 +91,71 @@ export const useDisponibilidad = () => {
     ]
   };
 
-  // Estado inicial con algunos bloques de disponibilidad predeterminados
-  const [disponibilidad, setDisponibilidad] = useState<BloqueDisponibilidad[]>([
-    // Lunes: 7:00-12:00, 14:00-19:00
-    ...generarBloquesConsecutivos('lunes-manana', DiaSemana.LUNES, '07:00', '12:00'),
-    ...generarBloquesConsecutivos('lunes-tarde', DiaSemana.LUNES, '14:00', '19:00'),
-    
-    // Miércoles: 9:00-16:00
-    ...generarBloquesConsecutivos('miercoles', DiaSemana.MIERCOLES, '09:00', '16:00'),
-    
-    // Viernes: 9:00-20:00
-    ...generarBloquesConsecutivos('viernes', DiaSemana.VIERNES, '09:00', '20:00'),
-  ]);
-
-  const [cicloSeleccionado, setCicloSeleccionado] = useState('1238');
+  const [disponibilidad, setDisponibilidad] = useState<BloqueDisponibilidad[]>([]);
+  const [cicloSeleccionado, setCicloSeleccionado] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+
+  // =========================================================================
+  // CARGAR DISPONIBILIDAD DEL BACKEND
+  // =========================================================================
+  const cargarDisponibilidad = useCallback(async (cycleId?: number) => {
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      const slots = await availabilityService.getMyAvailability(cycleId);
+      const bloques = slotsToBlocks(slots);
+      setDisponibilidad(bloques);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Error al cargar disponibilidad';
+      setError(message);
+      console.error('Error cargando disponibilidad:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  // Cargar al montar o cambiar ciclo
+  useEffect(() => {
+    if (cicloSeleccionado) {
+      cargarDisponibilidad(parseInt(cicloSeleccionado));
+    }
+  }, [cicloSeleccionado, cargarDisponibilidad]);
+
+  // =========================================================================
+  // GUARDAR DISPONIBILIDAD EN EL BACKEND
+  // =========================================================================
+  const guardarDisponibilidad = useCallback(async (): Promise<boolean> => {
+    if (!cicloSeleccionado) {
+      setError('Selecciona un ciclo primero');
+      return false;
+    }
+
+    setIsSaving(true);
+    setError(null);
+
+    try {
+      const slots = blocksToSlots(disponibilidad);
+      await availabilityService.save({
+        cycle_id: parseInt(cicloSeleccionado),
+        slots,
+      });
+      return true;
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Error al guardar disponibilidad';
+      setError(message);
+      console.error('Error guardando disponibilidad:', err);
+      return false;
+    } finally {
+      setIsSaving(false);
+    }
+  }, [cicloSeleccionado, disponibilidad]);
+
+  // =========================================================================
+  // FUNCIONES DE MANIPULACIÓN LOCAL
+  // =========================================================================
 
   // Generar horarios disponibles
   const generarHorarios = useCallback(() => {
@@ -170,21 +289,6 @@ export const useDisponibilidad = () => {
   }, []);
 
   // Funciones auxiliares
-  function generarBloquesConsecutivos(
-    baseId: string, 
-    dia: DiaSemana, 
-    inicio: string, 
-    fin: string
-  ): BloqueDisponibilidad[] {
-    return [{
-      id: `${baseId}-${Date.now()}`,
-      dia,
-      horaInicio: inicio,
-      horaFin: fin,
-      disponible: true
-    }];
-  }
-
   function calcularHoraSiguiente(hora: string): string {
     const [h] = hora.split(':');
     const siguienteHora = parseInt(h) + 1;
@@ -203,12 +307,18 @@ export const useDisponibilidad = () => {
     cicloSeleccionado,
     configuracion,
     isLoading,
+    isSaving,
+    error,
 
     // Datos computados
     horarios: generarHorarios(),
     estadisticas: calcularEstadisticas(),
 
-    // Acciones
+    // Acciones de backend
+    cargarDisponibilidad,
+    guardarDisponibilidad,
+
+    // Acciones locales
     estaDisponible,
     toggleDisponibilidad,
     arrastrarDisponibilidad,
@@ -216,4 +326,4 @@ export const useDisponibilidad = () => {
     setCicloSeleccionado,
     setIsLoading
   };
-}; 
+};

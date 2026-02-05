@@ -71,12 +71,8 @@ export const useMisClases = (): UseMisClasesResult => {
         }));
         setCiclosDisponibles(ciclosFormateados);
 
-        // Intentar obtener el ciclo actual
-        const currentCycle = await cyclesUserService.getCurrentCycle();
-        if (currentCycle) {
-          setCicloSeleccionado(String(currentCycle.id));
-        } else if (ciclosFormateados.length > 0) {
-          // Si no hay ciclo actual, usar el primero
+        // Usar el primer ciclo disponible (el endpoint current/ no existe)
+        if (ciclosFormateados.length > 0) {
           setCicloSeleccionado(ciclosFormateados[0].id);
         }
       } catch (err) {

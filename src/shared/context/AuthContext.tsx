@@ -4,9 +4,26 @@ import React, { createContext, useContext, useReducer, useEffect, ReactNode } fr
 import { AuthContextType, User, LoginDTO, RegisterAdminDTO, RegisterUserDTO, UpdateUserDTO, ChangePasswordDTO } from '../interfaces';
 import { UserModel } from '../models';
 import { CONFIG } from '../config';
+import { API_ENDPOINTS } from '../config/endpoints';
 import { authService } from '../services/authService';
 import { apiService } from '../services/apiService';
+import { httpClient } from '../services/http/HttpClient';
 import { logApiResponse, logLoginFlow, validateJWTResponse, createUserFromJWT } from '../utils/debugHelpers';
+
+// Interfaz del perfil de usuario del backend
+interface UserProfileAPI {
+  id: number;
+  email: string;
+  first_name: string;
+  last_name: string;
+  last_name_m?: string | null;
+  full_name: string;
+  phone?: string | null;
+  is_active: boolean;
+  role_names: string[];
+  is_staff: boolean;
+  is_superuser: boolean;
+}
 
 // Estado del contexto
 interface AuthState {
@@ -115,51 +132,67 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   }, []);
 
+  // Función para obtener datos del usuario del backend
+  const fetchUserProfile = async (): Promise<User> => {
+    const profile = await httpClient.get<UserProfileAPI>(API_ENDPOINTS.V2.USERS_ME);
+    
+    // Determinar rol basado en is_superuser/is_staff o role_names
+    let role: 'admin' | 'user' = 'user';
+    if (profile.is_superuser || profile.is_staff) {
+      role = 'admin';
+    } else if (profile.role_names.some(r => r.toLowerCase().includes('admin'))) {
+      role = 'admin';
+    }
+    
+    return {
+      id: String(profile.id),
+      email: profile.email,
+      firstName: profile.first_name || profile.email.split('@')[0],
+      lastName: profile.last_name || '',
+      role,
+      isActive: profile.is_active,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+  };
+
   // Función para verificar token
   const verifyToken = async (token: string) => {
     try {
       dispatch({ type: 'AUTH_LOADING' });
       
-      // Por ahora, solo verificar que el token existe y crear usuario básico
-      if (token) {
-        // Detectar tipo de usuario basado en localStorage o URL
-        const currentPath = window.location.pathname;
-        const isAdmin = currentPath.startsWith('/admin');
-        
-        // Crear usuario básico
-        const user = createUserFromJWT('usuario@temporal.com', isAdmin);
-        
-        dispatch({
-          type: 'AUTH_SUCCESS',
-          payload: { user, token },
-        });
-        
-        logLoginFlow('Token verificado y usuario creado', { userId: user.id, role: user.role });
-      } else {
+      if (!token) {
         throw new Error('Token inválido');
       }
+      
+      // Obtener datos reales del usuario desde el backend
+      const user = await fetchUserProfile();
+      
+      dispatch({
+        type: 'AUTH_SUCCESS',
+        payload: { user, token },
+      });
+      
+      logLoginFlow('Token verificado y usuario cargado desde backend', { userId: user.id, role: user.role, name: `${user.firstName} ${user.lastName}` });
     } catch (error) {
+      console.error('Error verificando token:', error);
       localStorage.removeItem(CONFIG.TOKEN_KEY);
       localStorage.removeItem(CONFIG.REFRESH_TOKEN_KEY);
       dispatch({ type: 'AUTH_ERROR', payload: 'Token inválido o expirado' });
     }
   };
 
-    // Función de login
+  // Función de login
   const login = async (credentials: LoginDTO): Promise<void> => {
     try {
       dispatch({ type: 'AUTH_LOADING' });
       
       logLoginFlow('Iniciando login', { email: credentials.email });
       
-      // Detectar el tipo de usuario basado en la URL actual
-      const currentPath = window.location.pathname;
-      const isAdminLogin = currentPath.includes('/login/admin') || currentPath.startsWith('/admin');
-      
-      // Paso 1: Obtener tokens JWT usando el endpoint que funciona
+      // Paso 1: Obtener tokens JWT
       const loginEndpoint = CONFIG.API_ENDPOINTS.AUTH.JWT_CREATE;
       
-      logLoginFlow('Usando endpoint JWT único', { endpoint: loginEndpoint, isAdminLogin });
+      logLoginFlow('Obteniendo tokens JWT', { endpoint: loginEndpoint });
       
       const loginResponse = await apiService.post<{ access: string; refresh: string }>(loginEndpoint, {
         email: credentials.email,
@@ -174,23 +207,30 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         console.warn('⚠️ Respuesta JWT incompleta:', validation.issues);
       }
       
-      // Paso 2: Crear usuario básico ya que el endpoint /users/me/ no está disponible
-      logLoginFlow('Creando usuario básico desde JWT', { isAdminLogin, email: credentials.email });
-      
-      const user = createUserFromJWT(credentials.email, isAdminLogin);
-      
-      // Guardar tokens en localStorage
+      // Guardar tokens en localStorage ANTES de hacer la llamada a /users/me/
       localStorage.setItem(CONFIG.TOKEN_KEY, loginResponse.access);
       localStorage.setItem(CONFIG.REFRESH_TOKEN_KEY, loginResponse.refresh);
+      
+      // Paso 2: Obtener datos reales del usuario
+      logLoginFlow('Obteniendo perfil del usuario desde backend', {});
+      
+      const user = await fetchUserProfile();
       
       dispatch({
         type: 'AUTH_SUCCESS',
         payload: { user, token: loginResponse.access },
       });
       
-      logLoginFlow('Login completado exitosamente', { userId: user.id, role: user.role });
+      logLoginFlow('Login completado exitosamente', { 
+        userId: user.id, 
+        role: user.role,
+        name: `${user.firstName} ${user.lastName}`
+      });
     } catch (error) {
       logLoginFlow('Error en login', error);
+      // Limpiar tokens en caso de error
+      localStorage.removeItem(CONFIG.TOKEN_KEY);
+      localStorage.removeItem(CONFIG.REFRESH_TOKEN_KEY);
       const errorMessage = error instanceof Error ? error.message : 'Credenciales incorrectas';
       dispatch({ type: 'AUTH_ERROR', payload: errorMessage });
       throw error;
